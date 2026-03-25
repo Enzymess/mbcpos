@@ -1,0 +1,176 @@
+[
+  {
+    "id": "f2fb4dc0-70e3-4ed4-b925-55bb0c6f0f60",
+    "date": "2026-03-18T17:49:02.076Z",
+    "items": [
+      {
+        "id": "prod_1773137040226_tao88",
+        "name": "Sunny Side Up Egg",
+        "price": 30,
+        "cost": 0,
+        "qty": 1,
+        "total": 30
+      },
+      {
+        "id": "prod_1773137040226_kerxw",
+        "name": "Talong & Okra w/ Alamang",
+        "price": 65,
+        "cost": 0,
+        "qty": 1,
+        "total": 65
+      },
+      {
+        "id": "prod_1773137040227_8c6aw",
+        "name": "Sinaing na Tulingan",
+        "price": 85,
+        "cost": 0,
+        "qty": 1,
+        "total": 85
+      },
+      {
+        "id": "prod_1773137040227_7lhcz",
+        "name": "Paksiw na Bangus",
+        "price": 80,
+        "cost": 0,
+        "qty": 1,
+        "total": 80
+      },
+      {
+        "id": "prod_1773137040227_jmdwi",
+        "name": "Pork Humba",
+        "price": 95,
+        "cost": 0,
+        "qty": 1,
+        "total": 95
+      },
+      {
+        "id": "prod_1773137040227_59u8o",
+        "name": "Pork Kare-Kare",
+        "price": 120,
+        "cost": 0,
+        "qty": 1,
+        "total": 120
+      },
+      {
+        "id": "prod_1773137040227_eku1z",
+        "name": "Chopsuey",
+        "price": 80,
+        "cost": 0,
+        "qty": 2,
+        "total": 160
+      },
+      {
+        "id": "prod_1773137040227_l6dga",
+        "name": "Ginataang Langka",
+        "price": 75,
+        "cost": 0,
+        "qty": 1,
+        "total": 75
+      }
+    ],
+    "total": 795.2,
+    "subtotal": 710,
+    "discount": 0,
+    "tax": 85.2,
+    "paymentMethod": "salary",
+    "processedBy": "Administrator",
+    "processedById": "admin-001",
+    "employeeId": "1006",
+    "employeeName": "enzo"
+  },
+  {
+    "id": "be2d99aa-7d0e-43e3-9abb-147319c5100c",
+    "date": "2026-03-22T15:19:56.649Z",
+    "items": [
+      {
+        "id": "prod_1773137040226_tnt2o",
+        "name": "Pork Tapa",
+        "price": 85,
+        "cost": 0,
+        "qty": 1,
+        "total": 85
+      },
+      {
+        "id": "prod_1773137040227_wcn3d",
+        "name": "Beef Caldereta",
+        "price": 130,
+        "cost": 0,
+        "qty": 1,
+        "total": 130
+      },
+      {
+        "id": "prod_1773137040226_42gbg",
+        "name": "Maling",
+        "price": 70,
+        "cost": 0,
+        "qty": 1,
+        "total": 70
+      }
+    ],
+    "total": 319.2,
+    "subtotal": 285,
+    "discount": 0,
+    "tax": 34.199999999999996,
+    "paymentMethod": "cash",
+    "processedBy": "Administrator",
+    "processedById": "admin-001"
+  },
+  {
+    "id": "231bfaac-4fba-4d6e-84fa-69d8c0ab3d97",
+    "date": "2026-03-22T15:27:03.071Z",
+    "items": [
+      {
+        "id": "prod_1773137040226_42gbg",
+        "name": "Maling",
+        "price": 70,
+        "cost": 0,
+        "qty": 1,
+        "total": 70
+      },
+      {
+        "id": "prod_1773137040226_6if27",
+        "name": "Daing na Bangus",
+        "price": 90,
+        "cost": 0,
+        "qty": 2,
+        "total": 180
+      }
+    ],
+    "total": 280,
+    "subtotal": 250,
+    "discount": 0,
+    "tax": 30,
+    "paymentMethod": "cash",
+    "processedBy": "Administrator",
+    "processedById": "admin-001"
+  },
+  {
+    "id": "2731f4f2-75a6-4bd1-bc74-556e54bba4e2",
+    "date": "2026-03-22T16:19:40.742Z",
+    "items": [
+      {
+        "id": "prod_1773137040227_wcn3d",
+        "name": "Beef Caldereta",
+        "price": 130,
+        "cost": 0,
+        "qty": 1,
+        "total": 130
+      },
+      {
+        "id": "prod_1773137040227_1hqc5",
+        "name": "Pepper Beef",
+        "price": 120,
+        "cost": 0,
+        "qty": 1,
+        "total": 120
+      }
+    ],
+    "total": 280,
+    "subtotal": 250,
+    "discount": 0,
+    "tax": 30,
+    "paymentMethod": "cash",
+    "processedBy": "Administrator",
+    "processedById": "admin-001"
+  }
+]

@@ -1,0 +1,23 @@
+[
+  {
+    "id": "cde60f47-1bd2-48f5-b363-a03a91858f24",
+    "employeeId": "1006",
+    "name": "enzo",
+    "department": "ee",
+    "position": "ee",
+    "totalBalance": 0,
+    "isActive": true,
+    "createdAt": "2026-03-18T17:48:59.392Z",
+    "lastPaymentDate": "2026-03-25T12:18:15.802Z"
+  },
+  {
+    "id": "bd399795-fd1d-45c0-a075-dec4390241e9",
+    "employeeId": "10026",
+    "name": "enzo sebastian",
+    "department": "pogi",
+    "position": "wala",
+    "totalBalance": 0,
+    "isActive": true,
+    "createdAt": "2026-03-25T12:14:22.777Z"
+  }
+]

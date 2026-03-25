@@ -1,0 +1,432 @@
+{
+  "accounts": [
+    {
+      "code": "1001",
+      "name": "Cash on Hand",
+      "type": "asset",
+      "normal": "debit",
+      "isSystem": true,
+      "description": "Physical cash in register"
+    },
+    {
+      "code": "1002",
+      "name": "Accounts Receivable - Employees",
+      "type": "asset",
+      "normal": "debit",
+      "isSystem": true,
+      "description": "Employee credit balance"
+    },
+    {
+      "code": "1003",
+      "name": "Inventory",
+      "type": "asset",
+      "normal": "debit",
+      "isSystem": true,
+      "description": "Product inventory value"
+    },
+    {
+      "code": "1004",
+      "name": "Accounts Receivable - Suppliers",
+      "type": "asset",
+      "normal": "debit",
+      "isSystem": true,
+      "description": "Amounts owed by suppliers"
+    },
+    {
+      "code": "2001",
+      "name": "Accounts Payable",
+      "type": "liability",
+      "normal": "credit",
+      "isSystem": true,
+      "description": "Amounts owed to suppliers"
+    },
+    {
+      "code": "2002",
+      "name": "VAT / Tax Payable",
+      "type": "liability",
+      "normal": "credit",
+      "isSystem": true,
+      "description": "Tax collected from sales"
+    },
+    {
+      "code": "2003",
+      "name": "Salary Deductions Payable",
+      "type": "liability",
+      "normal": "credit",
+      "isSystem": true,
+      "description": "Pending salary deductions"
+    },
+    {
+      "code": "3001",
+      "name": "Owner's Capital",
+      "type": "equity",
+      "normal": "credit",
+      "isSystem": true,
+      "description": "Owner investment"
+    },
+    {
+      "code": "3002",
+      "name": "Retained Earnings",
+      "type": "equity",
+      "normal": "credit",
+      "isSystem": true,
+      "description": "Accumulated profits"
+    },
+    {
+      "code": "4001",
+      "name": "Sales Revenue",
+      "type": "revenue",
+      "normal": "credit",
+      "isSystem": true,
+      "description": "Revenue from cash/card sales"
+    },
+    {
+      "code": "4002",
+      "name": "Salary Deduction Revenue",
+      "type": "revenue",
+      "normal": "credit",
+      "isSystem": true,
+      "description": "Revenue from employee credit sales"
+    },
+    {
+      "code": "5001",
+      "name": "Cost of Goods Sold",
+      "type": "expense",
+      "normal": "debit",
+      "isSystem": true,
+      "description": "Direct costs of products sold"
+    },
+    {
+      "code": "5002",
+      "name": "Discounts Given",
+      "type": "expense",
+      "normal": "debit",
+      "isSystem": true,
+      "description": "Discounts applied to sales"
+    },
+    {
+      "code": "5003",
+      "name": "Operating Expenses",
+      "type": "expense",
+      "normal": "debit",
+      "isSystem": true,
+      "description": "General operating expenses"
+    },
+    {
+      "code": "5004",
+      "name": "Tax Expense",
+      "type": "expense",
+      "normal": "debit",
+      "isSystem": true,
+      "description": "Tax remittance expense"
+    },
+    {
+      "code": "5005",
+      "name": "Wastage Expense",
+      "type": "expense",
+      "normal": "debit",
+      "isSystem": true,
+      "description": "Product spoilage and wastage costs"
+    },
+    {
+      "code": "5006",
+      "name": "Monthly Fixed COGS",
+      "type": "expense",
+      "normal": "debit",
+      "isSystem": true,
+      "description": "Fixed monthly cost of goods for per-month COGS products"
+    }
+  ],
+  "journalEntries": [
+    {
+      "id": "JE-1773856142077",
+      "date": "2026-03-18T17:49:02.076Z",
+      "description": "Sale - salary - 8 items",
+      "reference": "f2fb4dc0-70e3-4ed4-b925-55bb0c6f0f60",
+      "type": "auto",
+      "lines": [
+        {
+          "accountCode": "1002",
+          "accountName": "Accounts Receivable - Employees",
+          "debit": 795.2,
+          "credit": 0
+        },
+        {
+          "accountCode": "4002",
+          "accountName": "Salary Deduction Revenue",
+          "debit": 0,
+          "credit": 710
+        },
+        {
+          "accountCode": "2002",
+          "accountName": "VAT / Tax Payable",
+          "debit": 0,
+          "credit": 85.20000000000005
+        }
+      ]
+    },
+    {
+      "id": "JE-CCT-1773856254460",
+      "date": "2026-03-18",
+      "description": "Cash Count — 2026-03-18 — Total: ₱14130.00",
+      "reference": "CCT-1773856254459",
+      "type": "cash_count",
+      "lines": [
+        {
+          "accountCode": "1001",
+          "accountName": "Cash on Hand",
+          "debit": 14130,
+          "credit": 0
+        },
+        {
+          "accountCode": "3002",
+          "accountName": "Retained Earnings",
+          "debit": 0,
+          "credit": 14130
+        }
+      ],
+      "createdBy": "admin-001",
+      "createdAt": "2026-03-18T17:50:54.460Z"
+    },
+    {
+      "id": "JE-CCT-1773857613693",
+      "date": "2026-03-18",
+      "description": "Cash Count — 2026-03-18 — Total: ₱21600.00",
+      "reference": "CCT-1773857613692",
+      "type": "cash_count",
+      "lines": [
+        {
+          "accountCode": "1001",
+          "accountName": "Cash on Hand",
+          "debit": 7470,
+          "credit": 0
+        },
+        {
+          "accountCode": "3002",
+          "accountName": "Retained Earnings",
+          "debit": 0,
+          "credit": 7470
+        }
+      ],
+      "createdBy": "admin-001",
+      "createdAt": "2026-03-18T18:13:33.693Z"
+    },
+    {
+      "id": "JE-CCT-1774192767401",
+      "date": "2026-03-22",
+      "description": "Cash Count - 2026-03-22 - ₱2000.00",
+      "reference": "CCT-1774192767399",
+      "type": "cash_count",
+      "lines": [
+        {
+          "accountCode": "1001",
+          "accountName": "Cash on Hand",
+          "debit": 0,
+          "credit": 19600
+        },
+        {
+          "accountCode": "3002",
+          "accountName": "Retained Earnings",
+          "debit": 19600,
+          "credit": 0
+        }
+      ],
+      "createdBy": "admin-001",
+      "createdAt": "2026-03-22T15:19:27.401Z"
+    },
+    {
+      "id": "JE-1774192796649",
+      "date": "2026-03-22T15:19:56.649Z",
+      "description": "Sale - cash - 3 items",
+      "reference": "be2d99aa-7d0e-43e3-9abb-147319c5100c",
+      "type": "auto",
+      "lines": [
+        {
+          "accountCode": "1001",
+          "accountName": "Cash on Hand",
+          "debit": 319.2,
+          "credit": 0
+        },
+        {
+          "accountCode": "4001",
+          "accountName": "Sales Revenue",
+          "debit": 0,
+          "credit": 284.99999999999994
+        },
+        {
+          "accountCode": "2002",
+          "accountName": "VAT / Tax Payable",
+          "debit": 0,
+          "credit": 34.200000000000045
+        }
+      ]
+    },
+    {
+      "id": "JE-CCT-1774192855407",
+      "date": "2026-03-22",
+      "description": "Cash Count - 2026-03-22 - ₱1999.80",
+      "reference": "CCT-1774192855406",
+      "type": "cash_count",
+      "lines": [
+        {
+          "accountCode": "1001",
+          "accountName": "Cash on Hand",
+          "debit": 0,
+          "credit": 0.2
+        },
+        {
+          "accountCode": "3002",
+          "accountName": "Retained Earnings",
+          "debit": 0.2,
+          "credit": 0
+        }
+      ],
+      "createdBy": "admin-001",
+      "createdAt": "2026-03-22T15:20:55.407Z"
+    },
+    {
+      "id": "JE-CCT-1774193210600",
+      "date": "2026-03-22",
+      "description": "Cash Count - 2026-03-22 - ₱2000.00",
+      "reference": "CCT-1774193210599",
+      "type": "cash_count",
+      "lines": [
+        {
+          "accountCode": "1001",
+          "accountName": "Cash on Hand",
+          "debit": 2000,
+          "credit": 0
+        },
+        {
+          "accountCode": "3002",
+          "accountName": "Retained Earnings",
+          "debit": 0,
+          "credit": 2000
+        }
+      ],
+      "createdBy": "admin-001",
+      "createdAt": "2026-03-22T15:26:50.600Z"
+    },
+    {
+      "id": "JE-1774193223071",
+      "date": "2026-03-22T15:27:03.071Z",
+      "description": "Sale - cash - 2 items",
+      "reference": "231bfaac-4fba-4d6e-84fa-69d8c0ab3d97",
+      "type": "auto",
+      "lines": [
+        {
+          "accountCode": "1001",
+          "accountName": "Cash on Hand",
+          "debit": 280,
+          "credit": 0
+        },
+        {
+          "accountCode": "4001",
+          "accountName": "Sales Revenue",
+          "debit": 0,
+          "credit": 249.99999999999997
+        },
+        {
+          "accountCode": "2002",
+          "accountName": "VAT / Tax Payable",
+          "debit": 0,
+          "credit": 30.00000000000003
+        }
+      ]
+    },
+    {
+      "id": "JE-CCT-1774193239680",
+      "date": "2026-03-22",
+      "description": "Cash Count - 2026-03-22 - ₱1870.00",
+      "reference": "CCT-1774193239679",
+      "type": "cash_count",
+      "lines": [
+        {
+          "accountCode": "1001",
+          "accountName": "Cash on Hand",
+          "debit": 0,
+          "credit": 130
+        },
+        {
+          "accountCode": "3002",
+          "accountName": "Retained Earnings",
+          "debit": 130,
+          "credit": 0
+        }
+      ],
+      "createdBy": "admin-001",
+      "createdAt": "2026-03-22T15:27:19.680Z"
+    },
+    {
+      "id": "JE-1774196380743",
+      "date": "2026-03-22T16:19:40.742Z",
+      "description": "Sale - cash - 2 items",
+      "reference": "2731f4f2-75a6-4bd1-bc74-556e54bba4e2",
+      "type": "auto",
+      "lines": [
+        {
+          "accountCode": "1001",
+          "accountName": "Cash on Hand",
+          "debit": 280,
+          "credit": 0
+        },
+        {
+          "accountCode": "4001",
+          "accountName": "Sales Revenue",
+          "debit": 0,
+          "credit": 249.99999999999997
+        },
+        {
+          "accountCode": "2002",
+          "accountName": "VAT / Tax Payable",
+          "debit": 0,
+          "credit": 30.00000000000003
+        }
+      ]
+    },
+    {
+      "id": "JE-CCT-1774196399892",
+      "date": "2026-03-22",
+      "description": "Cash Count - 2026-03-22 Shift 3 - ₱1850.00",
+      "reference": "CCT-1774196399891",
+      "type": "cash_count",
+      "lines": [
+        {
+          "accountCode": "1001",
+          "accountName": "Cash on Hand",
+          "debit": 0,
+          "credit": 20
+        },
+        {
+          "accountCode": "3002",
+          "accountName": "Retained Earnings",
+          "debit": 20,
+          "credit": 0
+        }
+      ],
+      "createdBy": "admin-001",
+      "createdAt": "2026-03-22T16:19:59.892Z"
+    },
+    {
+      "id": "JE-1774441095802",
+      "date": "2026-03-25T12:18:15.802Z",
+      "description": "Employee Payment - enzo",
+      "reference": "1006",
+      "type": "auto",
+      "lines": [
+        {
+          "accountCode": "1001",
+          "accountName": "Cash on Hand",
+          "debit": 795.2,
+          "credit": 0
+        },
+        {
+          "accountCode": "1002",
+          "accountName": "Accounts Receivable - Employees",
+          "debit": 0,
+          "credit": 795.2
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+[
+  {
+    "id": "007d828e-f11a-4a27-afc5-0cb07dc5b74a",
+    "transactionId": "f2fb4dc0-70e3-4ed4-b925-55bb0c6f0f60",
+    "employeeId": "1006",
+    "employeeName": "enzo",
+    "type": "charge",
+    "amount": 795.2,
+    "items": [
+      {
+        "name": "Sunny Side Up Egg",
+        "qty": 1
+      },
+      {
+        "name": "Talong & Okra w/ Alamang",
+        "qty": 1
+      },
+      {
+        "name": "Sinaing na Tulingan",
+        "qty": 1
+      },
+      {
+        "name": "Paksiw na Bangus",
+        "qty": 1
+      },
+      {
+        "name": "Pork Humba",
+        "qty": 1
+      },
+      {
+        "name": "Pork Kare-Kare",
+        "qty": 1
+      },
+      {
+        "name": "Chopsuey",
+        "qty": 2
+      },
+      {
+        "name": "Ginataang Langka",
+        "qty": 1
+      }
+    ],
+    "date": "2026-03-18T17:49:02.076Z",
+    "isSettled": true,
+    "settledAt": "2026-03-25T12:18:15.802Z",
+    "settledBy": "admin-001"
+  }
+]

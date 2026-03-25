@@ -1,0 +1,20 @@
+[
+  {
+    "id": "admin-001",
+    "username": "admin",
+    "password": "$2a$10$MfPG5F8TQNIDpSBenpgUyerX4dK0b6ZoEAdAJrZ8reVn3ro7/MaF6",
+    "fullName": "Administrator",
+    "role": "admin",
+    "isActive": true,
+    "createdAt": "2026-03-18T17:48:37.214Z"
+  },
+  {
+    "id": "cashier-001",
+    "username": "cashier",
+    "password": "$2a$10$WBtcLru6/3bt24ypBwsN8.B/fOQDknY6ZeE5XiGDrBaQACrJ2Tu26",
+    "fullName": "Cashier",
+    "role": "cashier",
+    "isActive": true,
+    "createdAt": "2026-03-18T18:16:36.605Z"
+  }
+]

@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>MBCPOS - Admin Panel</title>
+ <link rel="stylesheet" href="style.css">
+ <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+ <style>
+  .au-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--border);font-size:11px;font-weight:600;cursor:default;user-select:none;}
+  .au-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .au-live{background:#22c55e;box-shadow:0 0 0 0 rgba(34,197,94,.4);animation:au-pulse 2s infinite;}
+  .au-loading{background:#f59e0b;} .au-paused{background:#9ca3af;} .au-error{background:#ef4444;}
+  @keyframes au-pulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.5)}70%{box-shadow:0 0 0 6px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+  .cash-count-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px;}
+  .cash-denom-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:10px 12px;display:flex;flex-direction:column;gap:6px;transition:border-color .15s;}
+  .cash-denom-card:focus-within{border-color:var(--accent);}
+  .cash-denom-label{font-weight:700;font-size:15px;color:var(--text-1);}
+  .cash-denom-label small{font-size:11px;font-weight:400;color:var(--text-3);margin-left:3px;}
+  .cash-denom-input{width:100%;border:1px solid var(--border);border-radius:var(--r-sm);padding:5px 8px;font-size:14px;font-weight:600;background:var(--bg);color:var(--text-1);text-align:center;}
+  .cash-denom-input:focus{outline:none;border-color:var(--accent);}
+  .cash-denom-subtotal{font-size:12px;color:var(--text-3);text-align:right;}
+  .role-admin{background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;}
+  .role-cashier{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;}
+  .role-accountant{background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;}
+ </style>
+</head>
+<body>
+   <!-- Top Navigation -->
+  <nav class="top-nav">
+    <div class="nav-logo">MBC POS</div>
+    <div class="nav-user" style="display:flex;align-items:center;gap:12px;">
+      <div class="au-badge" title="Auto-updates every 15 seconds">
+        <span class="au-dot au-live" id="autoUpdateDot"></span>
+        <span id="autoUpdateLabel">Live</span>
+      </div>
+      <span id="adminName">Admin</span>
+    </div>
+  </nav>
+
+ <div class="admin-layout">
+ <!-- Sidebar -->
+ <aside class="admin-sidebar">
+ <!-- User block -->
+ <div class="sidebar-user">
+ <div class="sidebar-avatar" id="sidebarAvatar">A</div>
+ <div>
+ <div class="sidebar-user-name" id="sidebarUserName">Admin</div>
+ <div class="sidebar-user-role" id="sidebarUserRole">Administrator</div>
+ </div>
+ </div>
+
+ <!-- Nav -->
+ <nav class="sidebar-nav">
+ <div class="sidebar-section-label">Overview</div>
+ <div class="sidebar-item active" data-tab="dashboard" onclick="switchTab('dashboard')">
+ <span>Dashboard</span>
+ </div>
+ <div class="sidebar-item" data-tab="transactions" onclick="switchTab('transactions')">
+ <span>Transactions</span>
+ </div>
+
+ <div class="sidebar-section-label">Inventory</div>
+ <div class="sidebar-item" data-tab="products" onclick="switchTab('products')">
+ <span>Products</span>
+ </div>
+ <div class="sidebar-item" data-tab="categories" onclick="switchTab('categories')">
+ <span>Categories</span>
+ </div>
+ <div class="sidebar-item admin-only" data-tab="cogsWastage" onclick="switchTab('cogsWastage')">
+ <span>COGS &amp; Wastage</span>
+ </div>
+
+ <div class="sidebar-section-label admin-only">HR</div>
+ <div class="sidebar-item admin-only" data-tab="employees" onclick="switchTab('employees')">
+ <span>Employees</span>
+ </div>
+
+ <div class="sidebar-section-label admin-only">Finance</div>
+ <div class="sidebar-item admin-only" data-tab="accounting" onclick="switchTab('accounting')">
+ <span>Accounting</span>
+ </div>
+ <div class="sidebar-item" data-tab="cashCount" onclick="switchTab('cashCount')">
+ <span>Cash Count</span>
+ </div>
+ <div class="sidebar-item admin-only" data-tab="reports" onclick="switchTab('reports')">
+ <span>Reports</span>
+ </div>
+
+ <div class="sidebar-section-label admin-only">System</div>
+ <div class="sidebar-item admin-only" data-tab="users" onclick="switchTab('users')">
+ <span>Users</span>
+ </div>
+ <div class="sidebar-item admin-only" data-tab="audit" onclick="switchTab('audit')">
+ <span>Audit Log</span>
+ </div>
+ <div class="sidebar-item admin-only" data-tab="settings" onclick="switchTab('settings')">
+ <span>Settings</span>
+ </div>
+ </nav>
+
+ <!-- Footer actions -->
+ <div class="sidebar-footer">
+ <a href="/" class="sidebar-footer-btn back">
+ <span>Back to Register</span>
+ </a>
+ <button class="sidebar-footer-btn signout" onclick="logout()">
+ <span>Sign Out</span>
+ </button>
+ </div>
+ </aside>
+
+ <!-- Main Content -->
+ <div class="admin-main">
+ <div class="container">
+
+ <!-- Dashboard Tab -->
+ <div class="tab-content active" id="dashboardTab">
+ <div class="page-header">
+ <h1 class="page-title">Dashboard</h1>
+ <div class="page-date" id="dashboardDate"></div>
+ </div>
+ 
+ <!-- Stats Row -->
+ <div class="stat-cards-row" id="dashboardStats"></div>
+ 
+ <!-- Dashboard Grid -->
+ <div class="admin-grid">
+ <!-- A/R Summary Widget -->
+ <div class="dashboard-widget" id="arWidget">
+ <div class="dashboard-widget-header">
+ <h3>Accounts Receivable Summary</h3>
+ <span class="badge badge-info" id="arStatusBadge">A/R</span>
+ </div>
+ <div class="dashboard-widget-body" id="arWidgetBody">
+ <div class="empty-state">
+ <p>Loading...</p>
+ </div>
+ </div>
+ </div>
+ 
+ <!-- Low Stock Widget -->
+ <div class="dashboard-widget low-stock-widget" id="lowStockWidget">
+ <div class="dashboard-widget-header">
+ <h3>Low Stock Alerts</h3>
+ <span class="badge badge-warning" id="lowStockCount">0</span>
+ </div>
+ <div class="dashboard-widget-body" id="lowStockBody">
+ <div class="empty-state">
+ <p>No low stock items</p>
+ </div>
+ </div>
+ </div>
+ 
+ <!-- Margin Alerts Widget -->
+ <div class="dashboard-widget margin-alert-widget" id="marginAlertWidget">
+ <div class="dashboard-widget-header">
+ <h3>Profit Margin Alerts</h3>
+ <span class="badge badge-danger" id="marginAlertCount">0</span>
+ </div>
+ <div class="dashboard-widget-body" id="marginAlertBody">
+ <div class="empty-state">
+ <p>No margin alerts</p>
+ </div>
+ </div>
+ </div>
+ </div>
+ 
+ <!-- Revenue Chart -->
+ <div class="card">
+ <div class="card-header">
+ <span class="card-title">7-Day Revenue & Profit</span>
+ </div>
+ <div class="card-body">
+ <canvas id="revenueChart" height="100"></canvas>
+ </div>
+ </div>
+ </div>
+
+ <!-- Products Tab -->
+ <div class="tab-content" id="productsTab">
+ <div class="page-header">
+ <h1 class="page-title">Products</h1>
+ <button class="btn btn-primary" onclick="showAddProductModal()">+ Add Product</button>
+ </div>
+ 
+ <div class="search-filters">
+ <div class="search-input">
+ <input type="text" id="productSearch" class="form-input" placeholder="Search products..." oninput="filterProducts()">
+ </div>
+ <div class="filter-group">
+ <select id="productCategoryFilter" class="form-select" onchange="filterProducts()">
+ <option value="">All Categories</option>
+ </select>
+ </div>
+ </div>
+ 
+ <!-- Products Grid View -->
+ <div class="products-grid-view" id="productsGridView"></div>
+ 
+ <!-- Stock Receiving Section -->
+ <div class="card" style="margin-top: 24px;">
+ <div class="card-header">
+ <span class="card-title">Stock Receiving</span>
+ <button class="btn btn-primary btn-sm" onclick="showStockReceivingModal()">+ Record Receipt</button>
+ </div>
+ <div class="card-body">
+ <div class="table-container">
+ <table class="data-table" id="receivingTable">
+ <thead>
+ <tr>
+ <th>Date</th>
+ <th>Product</th>
+ <th>Qty</th>
+ <th>Unit Cost</th>
+ <th>Total</th>
+ <th>Payment</th>
+ <th>Supplier</th>
+ </tr>
+ </thead>
+ <tbody id="receivingTableBody"></tbody>
+ </table>
+ </div>
+ </div>
+ </div>
+ </div>
+
+
+ <!-- COGS & Wastage Tab -->
+ <div class="tab-content" id="cogsWastageTab">
+  <div class="page-header">
+   <h1 class="page-title">COGS &amp; Wastage</h1>
+  </div>
+
+  <!-- Monthly COGS Panel -->
+  <div class="card">
+   <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+    <span class="card-title">Monthly COGS</span>
+    <div style="display:flex;gap:8px;">
+     <button class="btn btn-danger btn-sm" onclick="fixMonthlyCOGSInventoryCredits()">Fix Inventory Credits</button>
+     <button class="btn btn-primary btn-sm" onclick="showAddMonthlyCogs()">+ Add Monthly COGS</button>
+    </div>
+   </div>
+   <div class="card-body" style="padding:16px;">
+
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-md);padding:10px 14px;margin-bottom:16px;font-size:12px;">
+     <strong style="color:var(--text-2);font-size:11px;text-transform:uppercase;letter-spacing:.05em;">Chart of Accounts</strong>
+     <div style="display:flex;gap:24px;margin-top:6px;flex-wrap:wrap;color:var(--text-2);">
+      <span>Dr &nbsp;<code style="background:var(--surface);border:1px solid var(--border);padding:1px 6px;border-radius:3px;font-size:12px;">5006</code>&nbsp; Monthly Fixed COGS</span>
+      <span>Cr &nbsp;<code style="background:var(--surface);border:1px solid var(--border);padding:1px 6px;border-radius:3px;font-size:12px;">1003</code>&nbsp; Inventory</span>
+     </div>
+    </div>
+
+    <div class="table-container">
+     <table class="data-table">
+      <thead><tr><th>Posted On</th><th>Month</th><th>Amount</th><th>Notes</th></tr></thead>
+      <tbody id="monthlyCogsHistoryBody">
+       <tr><td colspan="4" style="text-align:center;color:var(--text-3);">No monthly COGS posted yet</td></tr>
+      </tbody>
+     </table>
+    </div>
+   </div>
+  </div>
+
+  <!-- Add Monthly COGS Modal -->
+  <div class="modal-overlay" id="addMonthlyCogModal">
+   <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+     <span class="modal-title">Add Monthly COGS</span>
+     <button class="modal-close" onclick="closeModal('addMonthlyCogModal')">&times;</button>
+    </div>
+    <div class="modal-body" style="padding:20px;">
+     <div class="form-group">
+      <label class="form-label">Month *</label>
+      <input type="month" id="monthlyCogsPeriod" class="form-input">
+     </div>
+     <div class="form-group">
+      <label class="form-label">COGS Amount *</label>
+      <input type="number" id="monthlyCOGSAmount" class="form-input" step="0.01" min="0" placeholder="0.00">
+     </div>
+     <div class="form-group">
+      <label class="form-label">Notes</label>
+      <input type="text" id="monthlyCOGSNotes" class="form-input" placeholder="Optional description...">
+     </div>
+    </div>
+    <div class="modal-footer">
+     <button class="btn btn-ghost" onclick="closeModal('addMonthlyCogModal')">Cancel</button>
+     <button class="btn btn-primary" onclick="postMonthlyCogs()">Post</button>
+    </div>
+   </div>
+  </div>
+
+  <!-- Wastage Panel -->
+  <div class="card" style="margin-top:20px;">
+   <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+    <span class="card-title">Wastage</span>
+    <button class="btn btn-primary btn-sm" onclick="showAddWastageModal()">+ Add Wastage</button>
+   </div>
+   <div class="card-body" style="padding:16px;">
+
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-md);padding:10px 14px;margin-bottom:16px;font-size:12px;">
+     <strong style="color:var(--text-2);font-size:11px;text-transform:uppercase;letter-spacing:.05em;">Chart of Accounts</strong>
+     <div style="display:flex;gap:24px;margin-top:6px;flex-wrap:wrap;color:var(--text-2);">
+      <span>Dr &nbsp;<code style="background:var(--surface);border:1px solid var(--border);padding:1px 6px;border-radius:3px;font-size:12px;">5005</code>&nbsp; Wastage Expense</span>
+      <span>Cr &nbsp;<code style="background:var(--surface);border:1px solid var(--border);padding:1px 6px;border-radius:3px;font-size:12px;">1003</code>&nbsp; Inventory</span>
+     </div>
+    </div>
+
+    <div class="table-container">
+     <table class="data-table">
+      <thead>
+       <tr><th>Date</th><th>Product</th><th>Qty</th><th>Unit Cost</th><th>Total Cost</th><th>Reason</th><th>Recorded By</th></tr>
+      </thead>
+      <tbody id="wastageLogBody">
+       <tr><td colspan="7" style="text-align:center;color:var(--text-3);">No wastage recorded yet</td></tr>
+      </tbody>
+     </table>
+    </div>
+   </div>
+  </div>
+
+  <!-- Add Wastage Modal -->
+  <div class="modal-overlay" id="addWastageModal">
+   <div class="modal" style="max-width:460px;">
+    <div class="modal-header">
+     <span class="modal-title">Add Wastage</span>
+     <button class="modal-close" onclick="closeModal('addWastageModal')">&times;</button>
+    </div>
+    <div class="modal-body" style="padding:20px;">
+     <div class="form-group">
+      <label class="form-label">Product *</label>
+      <select id="wastageProductSel" class="form-select" onchange="updateWastageCostPreview()"></select>
+     </div>
+     <div class="form-row">
+      <div class="form-group">
+       <label class="form-label">Quantity *</label>
+       <input type="number" id="wastageQty" class="form-input" min="1" step="1" oninput="updateWastageCostPreview()">
+      </div>
+      <div class="form-group">
+       <label class="form-label">Reason</label>
+       <select id="wastageReason" class="form-select">
+        <option value="Spoilage">Spoilage</option>
+        <option value="Expiry">Expiry</option>
+        <option value="Damaged">Damaged</option>
+        <option value="Contamination">Contamination</option>
+        <option value="Over-preparation">Over-preparation</option>
+        <option value="Other">Other</option>
+       </select>
+      </div>
+     </div>
+     <div class="form-group">
+      <label class="form-label">Notes</label>
+      <input type="text" id="wastageNotes" class="form-input" placeholder="Optional details...">
+     </div>
+     <div id="wastageCostPreview" style="display:none;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-md);padding:10px 14px;font-size:13px;color:var(--text-2);">
+      COGS impact: <strong id="wastageCostAmt" style="color:var(--red);"></strong>
+      &nbsp;(Dr 5005 Wastage Expense / Cr 1003 Inventory)
+     </div>
+    </div>
+    <div class="modal-footer">
+     <button class="btn btn-ghost" onclick="closeModal('addWastageModal')">Cancel</button>
+     <button class="btn btn-danger" onclick="saveWastage()">Record Wastage</button>
+    </div>
+   </div>
+  </div>
+
+ </div>
+
+ <!-- Categories Tab -->
+ <div class="tab-content" id="categoriesTab">
+ <div class="page-header">
+ <h1 class="page-title">Categories</h1>
+ <button class="btn btn-primary" onclick="showAddCategoryModal()">+ Add Category</button>
+ </div>
+ 
+ <!-- Categories Grid View -->
+ <div class="categories-grid-view" id="categoriesGridView"></div>
+ </div>
+
+ <!-- Employees Tab -->
+ <div class="tab-content" id="employeesTab">
+ <div class="page-header">
+ <h1 class="page-title">Employees</h1>
+ <button class="btn btn-primary" onclick="showAddEmployeeModal()">+ Add Employee</button>
+ </div>
+ 
+ <div class="search-filters">
+ <div class="search-input">
+ <input type="text" id="employeeSearch" class="form-input" placeholder="Search by name, ID, or department..." oninput="filterEmployees()">
+ </div>
+ <div class="filter-group">
+ <select id="employeeDeptFilter" class="form-select" onchange="filterEmployees()">
+ <option value="">All Departments</option>
+ </select>
+ </div>
+ <div class="filter-group">
+ <button class="payment-filter-btn active" data-filter="all" onclick="setEmployeePaymentFilter('all')">All</button>
+ <button class="payment-filter-btn" data-filter="unpaid" onclick="setEmployeePaymentFilter('unpaid')">Unpaid</button>
+ <button class="payment-filter-btn" data-filter="paid" onclick="setEmployeePaymentFilter('paid')">Paid</button>
+ </div>
+ </div>
+ 
+ <div class="table-container">
+ <table class="data-table" id="employeesTable">
+ <thead>
+ <tr>
+ <th>Emp ID</th>
+ <th>Name</th>
+ <th>Department</th>
+ <th>Position</th>
+ <th>Amount Owed</th>
+ <th>Payment Status</th>
+ <th>Status</th>
+ <th>Actions</th>
+ </tr>
+ </thead>
+ <tbody id="employeesTableBody"></tbody>
+ </table>
+ </div>
+ </div>
+
+ <!-- Accounting Tab -->
+ <div class="tab-content" id="accountingTab">
+ <!-- Accounting Sub-tabs -->
+ <div class="tabs" style="margin-bottom: 20px;">
+ <div class="tab active" data-subtab="summary" onclick="switchAccountingTab('summary')">Summary</div>
+ <div class="tab" data-subtab="accounts" onclick="switchAccountingTab('accounts')">Chart of Accounts</div>
+ <div class="tab" data-subtab="balancesheet" onclick="switchAccountingTab('balancesheet')">Balance Sheet</div>
+ <div class="tab" data-subtab="margins" onclick="switchAccountingTab('margins')">Profit Margins</div>
+ <div class="tab" data-subtab="journal" onclick="switchAccountingTab('journal')">Journal Entries</div>
+ <div class="tab" data-subtab="tax" onclick="switchAccountingTab('tax')">Tax Management</div>
+ </div>
+ 
+ <!-- Summary Sub-tab -->
+ <div class="accounting-subtab active" id="accountingSummary">
+ <div class="accounting-summary-cards" id="accountingSummaryCards"></div>
+ 
+ <!-- Income Statement -->
+ <div class="card" style="margin-bottom: 24px;">
+ <div class="card-header">
+ <span class="card-title">Income Statement</span>
+ <div class="filter-group">
+ <select id="incomePeriod" class="form-select form-sm" onchange="loadIncomeStatement()">
+ <option value="monthly">This Month</option>
+ <option value="quarterly">This Quarter</option>
+ <option value="yearly">This Year</option>
+ <option value="custom">Custom Range</option>
+ </select>
+ <input type="date" id="incomeFrom" class="form-input form-sm" style="display:none;">
+ <input type="date" id="incomeTo" class="form-input form-sm" style="display:none;">
+ <button class="btn btn-secondary btn-sm" onclick="loadIncomeStatement()">Generate</button>
+ </div>
+ </div>
+ <div class="card-body" id="incomeStatementBody">
+ <div class="empty-state">
+ <p>Select period and click Generate</p>
+ </div>
+ </div>
+ </div>
+ 
+ <!-- A/R Summary -->
+ <div class="card" style="margin-top: 24px;">
+ <div class="card-header">
+ <span class="card-title">Accounts Receivable Summary</span>
+ </div>
+ <div class="card-body" id="arSummaryBody">
+ <p>Loading...</p>
+ </div>
+ </div>
+ </div>
+ 
+ 
+ <!-- Chart of Accounts Sub-tab -->
+ <div class="accounting-subtab" id="accountingAccounts">
+ <div class="page-header">
+ <h1 class="page-title">Chart of Accounts</h1>
+ <div class="filter-group">
+ <select id="coaPeriod" class="form-select" onchange="loadAccounts()">
+ <option value="all">All Time</option>
+ <option value="monthly">This Month</option>
+ <option value="quarterly">This Quarter</option>
+ <option value="yearly">This Year</option>
+ </select>
+ <button class="btn btn-primary" onclick="showAddAccountModal()">+ Add Account</button>
+ </div>
+ </div>
+
+ <div class="table-container">
+ <table class="data-table" id="accountsTable">
+ <thead>
+ <tr>
+ <th>Code</th>
+ <th>Name</th>
+ <th>Type</th>
+ <th>Normal</th>
+ <th>Debit Total</th>
+ <th>Credit Total</th>
+ <th>Balance</th>
+ <th>Actions</th>
+ </tr>
+ </thead>
+ <tbody id="accountsTableBody"></tbody>
+ </table>
+ </div>
+ </div>
+
+ <!-- Balance Sheet Sub-tab -->
+ <div class="accounting-subtab" id="accountingBalancesheet">
+ <div class="page-header">
+ <h1 class="page-title">Balance Sheet</h1>
+ <div class="filter-group">
+ <select id="bsPeriod" class="form-select" onchange="loadBalanceSheet()">
+ <option value="all">All Time</option>
+ <option value="monthly">This Month</option>
+ <option value="quarterly">This Quarter</option>
+ <option value="yearly">This Year</option>
+ </select>
+ <button class="btn btn-secondary" onclick="loadBalanceSheet()">Generate</button>
+ </div>
+ </div>
+ <div id="balanceSheetBody">
+ <div class="empty-state"><p>Select period and click Generate</p></div>
+ </div>
+ </div>
+
+ <!-- Profit Margins Sub-tab -->
+ <div class="accounting-subtab" id="accountingMargins">
+ <div class="page-header">
+ <h1 class="page-title">Profit Margins</h1>
+ <div class="filter-group">
+ <select id="marginPeriod" class="form-select" onchange="loadMarginAnalysis()">
+ <option value="monthly">This Month</option>
+ <option value="quarterly">This Quarter</option>
+ <option value="yearly">This Year</option>
+ <option value="custom">Custom Range</option>
+ </select>
+ <input type="date" id="marginFrom" class="form-input form-sm" style="display:none;">
+ <input type="date" id="marginTo" class="form-input form-sm" style="display:none;">
+ <button class="btn btn-secondary" onclick="loadMarginAnalysis()">Generate</button>
+ </div>
+ </div>
+
+ <!-- Summary Cards -->
+ <div class="accounting-summary-cards" id="marginSummaryCards" style="margin-bottom:24px;"></div>
+
+ <!-- Income Statement for Margins -->
+ <div class="card" style="margin-bottom:24px;">
+ <div class="card-header"><span class="card-title">Income Statement Summary</span></div>
+ <div class="card-body" id="marginIncomeBody"><div class="empty-state"><p>Click Generate to load</p></div></div>
+ </div>
+
+ <!-- Per-Product Margins -->
+ <div class="card">
+ <div class="card-header"><span class="card-title">Per-Product Margin Analysis</span></div>
+ <div class="card-body">
+ <div class="table-container">
+ <table class="data-table" id="marginProductTable" style="table-layout:fixed;width:100%;">
+ <colgroup>
+   <col style="width:28%;">
+   <col style="width:10%;">
+   <col style="width:14%;">
+   <col style="width:14%;">
+   <col style="width:14%;">
+   <col style="width:10%;">
+   <col style="width:10%;">
+ </colgroup>
+ <thead>
+ <tr>
+ <th style="text-align:left;">Product</th>
+ <th style="text-align:right;">Qty Sold</th>
+ <th style="text-align:right;">Revenue</th>
+ <th style="text-align:right;">COGS</th>
+ <th style="text-align:right;">Gross Profit</th>
+ <th style="text-align:right;">Margin %</th>
+ <th style="text-align:center;">Status</th>
+ </tr>
+ </thead>
+ <tbody id="marginProductBody"><tr><td colspan="7" class="empty-state">Click Generate to load</td></tr></tbody>
+ </table>
+ </div>
+ </div>
+ </div>
+ </div>
+
+ <!-- Journal Entries Sub-tab -->
+ <div class="accounting-subtab" id="accountingJournal">
+ <div class="page-header">
+ <h1 class="page-title">Journal Entries</h1>
+ <button class="btn btn-primary" onclick="showAddJournalModal()">+ New Manual Entry</button>
+ </div>
+ 
+ <div class="search-filters">
+ <div class="filter-group">
+ <input type="date" id="journalFrom" class="form-input">
+ <input type="date" id="journalTo" class="form-input">
+ <select id="journalType" class="form-select">
+ <option value="">All Types</option>
+ <option value="auto">Auto</option>
+ <option value="manual">Manual</option>
+ </select>
+ <button class="btn btn-secondary btn-sm" onclick="loadJournalEntries()">Filter</button>
+ </div>
+ </div>
+ 
+ <div class="table-container">
+ <table class="data-table" id="journalTable">
+ <thead>
+ <tr>
+ <th>Date</th>
+ <th>JE#</th>
+ <th>Description</th>
+ <th>Ref</th>
+ <th>Debit</th>
+ <th>Credit</th>
+ <th>Type</th>
+ </tr>
+ </thead>
+ <tbody id="journalTableBody"></tbody>
+ </table>
+ </div>
+ </div>
+ 
+ <!-- Tax Management Sub-tab -->
+ <div class="accounting-subtab" id="accountingTax">
+ <div class="page-header">
+ <h1 class="page-title">Tax Management</h1>
+ </div>
+ 
+ <div class="admin-grid">
+ <div class="card">
+ <div class="card-header">
+ <span class="card-title">Tax Payable Summary</span>
+ </div>
+ <div class="card-body" id="taxSummaryBody">
+ <p>Loading...</p>
+ </div>
+ </div>
+ 
+ <div class="card">
+ <div class="card-header">
+ <span class="card-title">Monthly Tax Summary</span>
+ </div>
+ <div class="card-body" id="monthlyTaxBody">
+ <p>Loading...</p>
+ </div>
+ </div>
+ </div>
+ 
+ <div class="card" style="margin-top: 24px;">
+ <div class="card-header">
+ <span class="card-title">Tax Payment History</span>
+ </div>
+ <div class="card-body">
+ <div class="table-container">
+ <table class="data-table" id="taxPaymentsTable">
+ <thead>
+ <tr>
+ <th>Date</th>
+ <th>Period</th>
+ <th>Amount</th>
+ <th>Reference</th>
+ <th>Status</th>
+ </tr>
+ </thead>
+ <tbody id="taxPaymentsTableBody"></tbody>
+ </table>
+ </div>
+ <button class="btn btn-primary" style="margin-top: 16px;" onclick="showTaxRemittanceModal()">+ Record Tax Payment</button>
+ </div>
+ </div>
+ </div>
+ </div>
+
+ <!-- Reports Tab -->
+ <div class="tab-content" id="reportsTab">
+   <div class="page-header">
+     <h1 class="page-title">Reports</h1>
+   </div>
+
+   <!-- Report Type Nav -->
+   <div class="report-nav">
+     <button class="report-nav-btn active" data-report="daily" onclick="switchReport('daily')">
+       <span class="report-nav-icon"></span>
+       <span>Daily Sales</span>
+     </button>
+     <button class="report-nav-btn" data-report="products" onclick="switchReport('products')">
+       <span class="report-nav-icon"></span>
+       <span>Product Sales</span>
+     </button>
+     <button class="report-nav-btn" data-report="peak" onclick="switchReport('peak')">
+       <span class="report-nav-icon"></span>
+       <span>Peak Hours</span>
+     </button>
+     <button class="report-nav-btn" data-report="topselling" onclick="switchReport('topselling')">
+       <span class="report-nav-icon"></span>
+       <span>Best Sellers</span>
+     </button>
+     <button class="report-nav-btn" data-report="salary" onclick="switchReport('salary')">
+       <span class="report-nav-icon"></span>
+       <span>Salary Deductions</span>
+     </button>
+   </div>
+
+   <!-- Report Panels -->
+   <div class="report-panels">
+
+     <!-- Daily Sales -->
+     <div class="report-panel active" id="reportPanel-daily">
+       <div class="report-controls">
+         <div class="report-controls-left">
+           <div class="report-field">
+             <label class="report-label">Date</label>
+             <input type="date" id="dailyReportDate" class="form-input report-input">
+           </div>
+           <div class="report-quick-dates">
+             <button class="quick-date-btn" onclick="setQuickDate('dailyReportDate','today')">Today</button>
+             <button class="quick-date-btn" onclick="setQuickDate('dailyReportDate','yesterday')">Yesterday</button>
+           </div>
+         </div>
+         <button class="btn btn-primary report-generate-btn" onclick="generateDailyReport()">
+           <span>Generate Report</span> <span>→</span>
+         </button>
+       </div>
+       <div class="report-output" id="dailyReportResult">
+         <div class="report-empty">
+           <div class="report-empty-icon"></div>
+           <div class="report-empty-text">Select a date and click Generate</div>
+         </div>
+       </div>
+     </div>
+
+     <!-- Product Sales -->
+     <div class="report-panel" id="reportPanel-products">
+       <div class="report-controls">
+         <div class="report-controls-left">
+           <div class="report-field">
+             <label class="report-label">From</label>
+             <input type="date" id="productReportFrom" class="form-input report-input">
+           </div>
+           <div class="report-field">
+             <label class="report-label">To</label>
+             <input type="date" id="productReportTo" class="form-input report-input">
+           </div>
+           <div class="report-quick-dates">
+             <button class="quick-date-btn" onclick="setQuickRange('productReportFrom','productReportTo','today')">Today</button>
+             <button class="quick-date-btn" onclick="setQuickRange('productReportFrom','productReportTo','week')">This Week</button>
+             <button class="quick-date-btn" onclick="setQuickRange('productReportFrom','productReportTo','month')">This Month</button>
+           </div>
+         </div>
+         <button class="btn btn-primary report-generate-btn" onclick="generateProductReport()">
+           <span>Generate Report</span> <span>→</span>
+         </button>
+       </div>
+       <div class="report-output" id="productReportResult">
+         <div class="report-empty">
+           <div class="report-empty-icon"></div>
+           <div class="report-empty-text">Select a date range and click Generate</div>
+         </div>
+       </div>
+     </div>
+
+     <!-- Peak Hours -->
+     <div class="report-panel" id="reportPanel-peak">
+       <div class="report-controls">
+         <div class="report-controls-left">
+           <div class="report-field">
+             <label class="report-label">From</label>
+             <input type="date" id="peakHoursFrom" class="form-input report-input">
+           </div>
+           <div class="report-field">
+             <label class="report-label">To</label>
+             <input type="date" id="peakHoursTo" class="form-input report-input">
+           </div>
+           <div class="report-quick-dates">
+             <button class="quick-date-btn" onclick="setQuickRange('peakHoursFrom','peakHoursTo','today')">Today</button>
+             <button class="quick-date-btn" onclick="setQuickRange('peakHoursFrom','peakHoursTo','week')">This Week</button>
+             <button class="quick-date-btn" onclick="setQuickRange('peakHoursFrom','peakHoursTo','month')">This Month</button>
+           </div>
+         </div>
+         <button class="btn btn-primary report-generate-btn" onclick="generatePeakHoursReport()">
+           <span>Generate Report</span> <span>→</span>
+         </button>
+       </div>
+       <div class="report-output" id="peakHoursResult">
+         <div class="report-empty">
+           <div class="report-empty-icon"></div>
+           <div class="report-empty-text">Select a date range and click Generate</div>
+         </div>
+       </div>
+     </div>
+
+     <!-- Best Sellers -->
+     <div class="report-panel" id="reportPanel-topselling">
+       <div class="report-controls">
+         <div class="report-controls-left">
+           <div class="report-field">
+             <label class="report-label">From</label>
+             <input type="date" id="topProductsFrom" class="form-input report-input">
+           </div>
+           <div class="report-field">
+             <label class="report-label">To</label>
+             <input type="date" id="topProductsTo" class="form-input report-input">
+           </div>
+           <div class="report-quick-dates">
+             <button class="quick-date-btn" onclick="setQuickRange('topProductsFrom','topProductsTo','today')">Today</button>
+             <button class="quick-date-btn" onclick="setQuickRange('topProductsFrom','topProductsTo','week')">This Week</button>
+             <button class="quick-date-btn" onclick="setQuickRange('topProductsFrom','topProductsTo','month')">This Month</button>
+           </div>
+         </div>
+         <button class="btn btn-primary report-generate-btn" onclick="generateTopProductsReport()">
+           <span>Generate Report</span> <span>→</span>
+         </button>
+       </div>
+       <div class="report-output" id="topProductsResult">
+         <div class="report-empty">
+           <div class="report-empty-icon"></div>
+           <div class="report-empty-text">Select a date range and click Generate</div>
+         </div>
+       </div>
+     </div>
+
+     <!-- Salary Deductions -->
+     <div class="report-panel" id="reportPanel-salary">
+       <div class="report-controls">
+         <div class="report-controls-left">
+           <div class="report-field">
+             <label class="report-label">Period</label>
+             <select id="salaryReportPeriod" class="form-select report-input" onchange="onSalaryPeriodChange()">
+               <option value="monthly">Monthly</option>
+               <option value="quarterly">Quarterly</option>
+               <option value="yearly">Yearly</option>
+               <option value="custom">Custom Range</option>
+             </select>
+           </div>
+           <div class="report-field" id="salaryMonthGroup">
+             <label class="report-label">Month</label>
+             <input type="month" id="salaryMonth" class="form-input report-input">
+           </div>
+           <div class="report-field" id="salaryQuarterGroup" style="display:none;">
+             <label class="report-label">Quarter</label>
+             <select id="salaryQuarter" class="form-select report-input">
+               <option value="Q1">Q1 (Jan–Mar)</option>
+               <option value="Q2">Q2 (Apr–Jun)</option>
+               <option value="Q3">Q3 (Jul–Sep)</option>
+               <option value="Q4">Q4 (Oct–Dec)</option>
+             </select>
+           </div>
+           <div class="report-field" id="salaryQuarterYearGroup" style="display:none;">
+             <label class="report-label">Year</label>
+             <input type="number" id="salaryQuarterYear" class="form-input report-input" placeholder="Year" value="2026">
+           </div>
+           <div class="report-field" id="salaryYearGroup" style="display:none;">
+             <label class="report-label">Year</label>
+             <input type="number" id="salaryYear" class="form-input report-input" placeholder="Year" value="2026">
+           </div>
+           <div class="report-field" id="salaryCustomFromGroup" style="display:none;">
+             <label class="report-label">From</label>
+             <input type="date" id="salaryFrom" class="form-input report-input">
+           </div>
+           <div class="report-field" id="salaryCustomToGroup" style="display:none;">
+             <label class="report-label">To</label>
+             <input type="date" id="salaryTo" class="form-input report-input">
+           </div>
+         </div>
+         <div class="report-actions">
+           <button class="btn btn-primary report-generate-btn" onclick="previewSalaryReport()">
+             <span>Preview</span> <span>→</span>
+           </button>
+           <button class="btn btn-secondary" onclick="printSalaryReport()">Print</button>
+           <button class="btn btn-ghost" onclick="downloadSalaryCSV()">CSV</button>
+         </div>
+       </div>
+       <div class="report-output" id="salaryReportPreview">
+         <div class="report-empty">
+           <div class="report-empty-icon"></div>
+           <div class="report-empty-text">Select a period and click Preview</div>
+         </div>
+       </div>
+     </div>
+
+   </div>
+ </div>
+
+
+ <!-- Transactions Tab -->
+ <div class="tab-content" id="transactionsTab">
+ <div class="page-header">
+ <h1 class="page-title">Transaction History</h1>
+ </div>
+ 
+ <div class="table-container">
+ <table class="data-table" id="transactionsTable">
+ <thead>
+ <tr>
+ <th>Date</th>
+ <th>ID</th>
+ <th>Items</th>
+ <th>Total</th>
+ <th>Method</th>
+ <th>Processed By</th>
+ </tr>
+ </thead>
+ <tbody id="transactionsTableBody"></tbody>
+ </table>
+ </div>
+ </div>
+
+ <!-- Audit Log Tab -->
+ <div class="tab-content" id="auditTab">
+ <div class="page-header">
+ <h1 class="page-title">Audit Log</h1>
+ <button class="btn btn-secondary" onclick="exportAuditLog()">Export CSV</button>
+ </div>
+ 
+ <div class="search-filters">
+ <div class="filter-group">
+ <input type="date" id="auditFrom" class="form-input">
+ <input type="date" id="auditTo" class="form-input">
+ <select id="auditAction" class="form-select">
+ <option value="">All Actions</option>
+ </select>
+ <button class="btn btn-secondary btn-sm" onclick="loadAuditLog()">Filter</button>
+ </div>
+ </div>
+ 
+ <div class="table-container">
+ <table class="data-table" id="auditTable">
+ <thead>
+ <tr>
+ <th>Timestamp</th>
+ <th>User</th>
+ <th>Action</th>
+ <th>Entity</th>
+ <th>Details</th>
+ </tr>
+ </thead>
+ <tbody id="auditTableBody"></tbody>
+ </table>
+ </div>
+ 
+ <div class="pagination" id="auditPagination"></div>
+ </div>
+
+ <!-- Settings Tab -->
+ <div class="tab-content" id="settingsTab">
+ <div class="page-header">
+ <h1 class="page-title">System Settings</h1>
+ </div>
+ 
+ <div class="card" style="max-width: 600px;">
+ <div class="card-body">
+ <div class="form-group">
+ <label class="form-label">Canteen Name</label>
+ <input type="text" id="settingCanteenName" class="form-input">
+ </div>
+ 
+ <div class="form-group">
+ <label class="form-label">Tax Rate (%)</label>
+ <input type="number" id="settingTaxRate" class="form-input" step="0.01" min="0" max="100">
+ </div>
+ 
+ <div class="form-group">
+ <label class="form-label">Margin Alert Threshold (%)</label>
+ <input type="number" id="settingMarginThreshold" class="form-input" min="0" max="100">
+ </div>
+ 
+ <div class="form-group">
+ <label class="form-label">Session Timeout (minutes, 0 = no timeout)</label>
+ <input type="number" id="settingSessionTimeout" class="form-input" min="0">
+ </div>
+ 
+ <div class="form-group">
+ <label class="form-label">Low Stock Default Threshold</label>
+ <input type="number" id="settingLowStockThreshold" class="form-input" min="1">
+ </div>
+ 
+ <div class="form-group">
+ <label class="form-label">Currency Symbol</label>
+ <input type="text" id="settingCurrency" class="form-input" maxlength="3">
+ </div>
+
+ <div class="form-group">
+ <label class="form-label">COGS Mode</label>
+ <select id="settingCogsMode" class="form-select">
+  <option value="per_product">Per Product — COGS charged each time a unit is sold</option>
+  <option value="per_month">Per Month — COGS posted as a fixed amount once per month</option>
+ </select>
+ <p style="font-size:12px;color:var(--text-3);margin-top:4px;">
+  This applies to all products globally. Switch to Per Month if you track costs as a bulk monthly expense rather than per unit sold.
+ </p>
+ </div>
+
+ <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+ </div>
+ </div>
+ </div>
+ </div>
+
+ <!-- Modals -->
+ <!-- Add/Edit Product Modal -->
+ <div class="modal-overlay" id="productModal">
+ <div class="modal">
+ <div class="modal-header">
+ <span class="modal-title" id="productModalTitle">Add Product</span>
+ <button class="modal-close" onclick="closeModal('productModal')">&times;</button>
+ </div>
+ <div class="modal-body">
+ <input type="hidden" id="productId">
+ <div class="form-group">
+ <label class="form-label">Product Image</label>
+ <div class="image-upload-container">
+ <div class="image-preview" id="productImagePreview">
+ <span>No image</span>
+ </div>
+ <input type="file" id="productImage" class="form-input" accept="image/*" onchange="previewProductImage(this)">
+ </div>
+ </div>
+ <div class="form-group">
+ <label class="form-label">Name *</label>
+ <input type="text" id="productName" class="form-input">
+ </div>
+ <div class="form-group">
+ <label class="form-label">Category</label>
+ <select id="productCategory" class="form-select"></select>
+ </div>
+ <div class="form-row">
+ <div class="form-group">
+ <label class="form-label">Price *</label>
+ <input type="number" id="productPrice" class="form-input" step="0.01" min="0">
+ </div>
+ <div class="form-group">
+ <label class="form-label">Cost <span style="color:var(--text-3);font-size:11px;font-weight:400;" id="costModeHint"></span></label>
+ <input type="number" id="productCost" class="form-input" step="0.01" min="0" placeholder="0.00">
+ </div>
+ </div>
+ <div class="form-row">
+ <div class="form-group">
+ <label class="form-label">Stock</label>
+ <input type="number" id="productStock" class="form-input" min="0">
+ </div>
+ <div class="form-group">
+ <label class="form-label">Low Stock Threshold</label>
+ <input type="number" id="productThreshold" class="form-input" min="1">
+ </div>
+ </div>
+ </div>
+ <div class="modal-footer">
+ <button class="btn btn-ghost" onclick="closeModal('productModal')">Cancel</button>
+ <button class="btn btn-primary" onclick="saveProduct()">Save</button>
+ </div>
+ </div>
+ </div>
+
+ <!-- Add/Edit Category Modal -->
+ <div class="modal-overlay" id="categoryModal">
+ <div class="modal">
+ <div class="modal-header">
+ <span class="modal-title" id="categoryModalTitle">Add Category</span>
+ <button class="modal-close" onclick="closeModal('categoryModal')">&times;</button>
+ </div>
+ <div class="modal-body">
+ <input type="hidden" id="categoryId">
+ <div class="form-group">
+ <label class="form-label">Category Image</label>
+ <div class="image-upload-container">
+ <div class="image-preview" id="categoryImagePreview">
+ <span>No image</span>
+ </div>
+ <input type="file" id="categoryImage" class="form-input" accept="image/*" onchange="previewCategoryImage(this)">
+ </div>
+ </div>
+ <div class="form-group">
+ <label class="form-label">Name *</label>
+ <input type="text" id="categoryName" class="form-input">
+ </div>
+ <div class="form-group">
+ <label class="form-label">Color</label>
+ <input type="color" id="categoryColor" class="form-input" value="#22577A">
+ </div>
+ </div>
+ <div class="modal-footer">
+ <button class="btn btn-ghost" onclick="closeModal('categoryModal')">Cancel</button>
+ <button class="btn btn-primary" onclick="saveCategory()">Save</button>
+ </div>
+ </div>
+ </div>
+
+ <!-- Add/Edit Employee Modal -->
+ <div class="modal-overlay" id="employeeModal">
+ <div class="modal">
+ <div class="modal-header">
+ <span class="modal-title" id="employeeModalTitle">Add Employee</span>
+ <button class="modal-close" onclick="closeModal('employeeModal')">&times;</button>
+ </div>
+ <div class="modal-body">
+ <input type="hidden" id="employeeDbId">
+ <div class="form-group">
+ <label class="form-label">Employee ID *</label>
+ <input type="text" id="employeeId" class="form-input" placeholder="EMP-1234">
+ </div>
+ <div class="form-group">
+ <label class="form-label">Full Name (optional)</label>
+ <input type="text" id="employeeName" class="form-input">
+ </div>
+ <div class="form-row">
+ <div class="form-group">
+ <label class="form-label">Department</label>
+ <input type="text" id="employeeDepartment" class="form-input">
+ </div>
+ <div class="form-group">
+ <label class="form-label">Position</label>
+ <input type="text" id="employeePosition" class="form-input">
+ </div>
+ </div>
+ <div class="form-row">
+ <div class="form-group">
+ <label class="form-label">Phone</label>
+ <input type="text" id="employeePhone" class="form-input">
+ </div>
+ <div class="form-group">
+ <label class="form-label">Email</label>
+ <input type="email" id="employeeEmail" class="form-input">
+ </div>
+ </div>
+ <div class="form-group">
+ <label class="form-label">Notes</label>
+ <textarea id="employeeNotes" class="form-textarea" rows="2"></textarea>
+ </div>
+ </div>
+ <div class="modal-footer">
+ <button class="btn btn-ghost" onclick="closeModal('employeeModal')">Cancel</button>
+ <button class="btn btn-primary" onclick="saveEmployee()">Save</button>
+ </div>
+ </div>
+ </div>
+
+ <!-- Employee Ledger Modal -->
+ <div class="modal-overlay" id="ledgerModal">
+ <div class="modal modal-lg">
+ <div class="modal-header">
+ <span class="modal-title">Employee Ledger</span>
+ <button class="modal-close" onclick="closeModal('ledgerModal')">&times;</button>
+ </div>
+ <div class="modal-body" id="ledgerModalBody">
+ <!-- Populated dynamically -->
+ </div>
+ <div class="modal-footer">
+ <button class="btn btn-secondary" onclick="printEmployeeLedger()">Print for HR</button>
+ <button class="btn btn-primary" onclick="closeModal('ledgerModal')">Close</button>
+ </div>
+ </div>
+ </div>
+
+ <!-- Stock Receiving Modal -->
+ <div class="modal-overlay" id="receivingModal">
+ <div class="modal">
+ <div class="modal-header">
+ <span class="modal-title">Record Stock Receipt</span>
+ <button class="modal-close" onclick="closeModal('receivingModal')">&times;</button>
+ </div>
+ <div class="modal-body">
+ <div class="form-group">
+ <label class="form-label">Product *</label>
+ <select id="receivingProduct" class="form-select"></select>
+ </div>
+ <div class="form-row">
+ <div class="form-group">
+ <label class="form-label">Quantity Received *</label>
+ <input type="number" id="receivingQty" class="form-input" min="1">
+ </div>
+ <div class="form-group">
+ <label class="form-label">Unit Cost *</label>
+ <input type="number" id="receivingCost" class="form-input" step="0.01" min="0.01">
+ </div>
+ </div>
+ <div class="form-group">
+ <label class="form-label">Payment Method</label>
+ <select id="receivingPayment" class="form-select">
+ <option value="cash">Paid in Cash</option>
+ <option value="credit">On Account (Accounts Payable)</option>
+ </select>
+ </div>
+ <div class="form-group">
+ <label class="form-label">Supplier Name</label>
+ <input type="text" id="receivingSupplier" class="form-input">
+ </div>
+ <div class="form-group">
+ <label class="form-label">Reference / DR Number</label>
+ <input type="text" id="receivingReference" class="form-input">
+ </div>
+ <div class="form-group">
+ <label class="form-label">Notes</label>
+ <textarea id="receivingNotes" class="form-textarea" rows="2"></textarea>
+ </div>
+ </div>
+ <div class="modal-footer">
+ <button class="btn btn-ghost" onclick="closeModal('receivingModal')">Cancel</button>
+ <button class="btn btn-primary" onclick="saveReceiving()">Save & Post Journal Entry</button>
+ </div>
+ </div>
+ </div>
+
+
+ <!-- Add/Edit Account Modal -->
+ <div class="modal-overlay" id="accountModal">
+ <div class="modal">
+ <div class="modal-header">
+ <span class="modal-title" id="accountModalTitle">Add Account</span>
+ <button class="modal-close" onclick="closeModal('accountModal')">&times;</button>
+ </div>
+ <div class="modal-body">
+ <input type="hidden" id="accountDbId">
+ <div class="form-group">
+ <label class="form-label">Account Code * (digits only)</label>
+ <input type="text" id="accountCode" class="form-input" placeholder="6001">
+ <p class="form-hint">1000-1999: Assets | 2000-2999: Liabilities | 3000-3999: Equity | 4000-4999: Revenue | 5000+: Expenses</p>
+ </div>
+ <div class="form-group">
+ <label class="form-label">Name *</label>
+ <input type="text" id="accountName" class="form-input">
+ </div>
+ <div class="form-group">
+ <label class="form-label">Type *</label>
+ <select id="accountType" class="form-select">
+ <option value="asset">Asset</option>
+ <option value="liability">Liability</option>
+ <option value="equity">Equity</option>
+ <option value="revenue">Revenue</option>
+ <option value="expense">Expense</option>
+ </select>
+ </div>
+ <div class="form-group">
+ <label class="form-label">Description</label>
+ <textarea id="accountDescription" class="form-textarea" rows="2"></textarea>
+ </div>
+ </div>
+ <div class="modal-footer">
+ <button class="btn btn-ghost" onclick="closeModal('accountModal')">Cancel</button>
+ <button class="btn btn-primary" onclick="saveAccount()">Save</button>
+ </div>
+ </div>
+ </div>
+
+ <!-- Journal Entry Modal -->
+ <div class="modal-overlay" id="journalModal">
+ <div class="modal modal-lg">
+ <div class="modal-header">
+ <span class="modal-title">New Journal Entry</span>
+ <button class="modal-close" onclick="closeModal('journalModal')">&times;</button>
+ </div>
+ <div class="modal-body">
+ <div class="form-row">
+ <div class="form-group">
+ <label class="form-label">Date</label>
+ <input type="date" id="journalDate" class="form-input">
+ </div>
+ <div class="form-group" style="flex: 2;">
+ <label class="form-label">Description</label>
+ <input type="text" id="journalDescription" class="form-input">
+ </div>
+ </div>
+ <div class="form-group">
+ <label class="form-label">Reference</label>
+ <input type="text" id="journalReference" class="form-input">
+ </div>
+ 
+ <div class="journal-lines" id="journalLines"></div>
+ 
+ <button class="btn btn-secondary btn-sm" onclick="addJournalLine()">+ Add Line</button>
+ 
+ <div class="journal-line-totals" id="journalTotals">
+ <span>Total Debits: <strong id="totalDebits">0.00</strong></span>
+ <span>Total Credits: <strong id="totalCredits">0.00</strong></span>
+ </div>
+ </div>
+ <div class="modal-footer">
+ <button class="btn btn-ghost" onclick="closeModal('journalModal')">Cancel</button>
+ <button class="btn btn-primary" id="saveJournalBtn" onclick="saveJournalEntry()">Save Entry</button>
+ </div>
+ </div>
+ </div>
+
+ <!-- Tax Remittance Modal -->
+ <div class="modal-overlay" id="taxModal">
+ <div class="modal">
+ <div class="modal-header">
+ <span class="modal-title">Record Tax Payment</span>
+ <button class="modal-close" onclick="closeModal('taxModal')">&times;</button>
+ </div>
+ <div class="modal-body">
+ <div class="form-group">
+ <label class="form-label">Period</label>
+ <select id="taxPeriod" class="form-select">
+ <option value="monthly">Monthly</option>
+ <option value="quarterly">Quarterly</option>
+ </select>
+ </div>
+ <div class="form-group">
+ <label class="form-label">Description</label>
+ <input type="text" id="taxDescription" class="form-input" value="Tax remittance">
+ </div>
+ <div class="form-group">
+ <label class="form-label">Amount *</label>
+ <input type="number" id="taxAmount" class="form-input" step="0.01">
+ </div>
+ <div class="form-group">
+ <label class="form-label">BIR Reference / Receipt #</label>
+ <input type="text" id="taxReference" class="form-input">
+ </div>
+ <div class="form-group">
+ <label class="form-label">Payment Date</label>
+ <input type="date" id="taxPaymentDate" class="form-input">
+ </div>
+ </div>
+ <div class="modal-footer">
+ <button class="btn btn-ghost" onclick="closeModal('taxModal')">Cancel</button>
+ <button class="btn btn-primary" onclick="saveTaxRemittance()">Record Payment</button>
+ </div>
+ </div>
+ </div>
+
+ <!-- Users Tab -->
+ <div class="tab-content" id="usersTab">
+  <div class="page-header"><h1 class="page-title">User Management</h1><button class="btn btn-primary" onclick="showUserModal()">+ Add User</button></div>
+  <div class="card"><div class="card-body"><div class="table-container">
+   <table class="data-table"><thead><tr><th>Username</th><th>Full Name</th><th>Role</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
+   <tbody id="usersTableBody"><tr><td colspan="6" style="text-align:center;color:var(--text-3);">Loading...</td></tr></tbody></table>
+  </div></div></div>
+ </div>
+
+ <!-- Cash Count Tab -->
+ <div class="tab-content" id="cashCountTab">
+  <div class="page-header"><h1 class="page-title">Cash Register Count</h1><button class="btn btn-primary" onclick="showCashCountModal()">+ New Count</button></div>
+  <div class="stat-cards-row" id="cashCountSummaryCards"></div>
+
+  <!-- Shift Comparison Panel -->
+  <div class="card" style="margin-top:20px;">
+   <div class="card-header" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+    <span class="card-title">Shift Comparison</span>
+    <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
+     <label style="font-size:13px;color:var(--text-2);">Date:</label>
+     <input type="date" id="shiftCompareDate" class="form-input" style="width:160px;" onchange="loadShiftComparison()">
+     <button class="btn btn-secondary btn-sm" onclick="loadShiftComparison()">Refresh</button>
+    </div>
+   </div>
+   <div class="card-body" id="shiftComparisonBody">
+    <div style="text-align:center;color:var(--text-3);padding:24px;">Select a date to view shift comparison</div>
+   </div>
+  </div>
+
+  <div class="card" style="margin-top:20px;"><div class="card-header"><span class="card-title">Count History</span></div><div class="card-body"><div class="table-container">
+   <table class="data-table"><thead><tr><th>Date</th><th>Shift</th><th>Counted By</th><th>Bills Total</th><th>Coins Total</th><th>Grand Total</th><th>Journal</th><th>Notes</th><th>Actions</th></tr></thead>
+   <tbody id="cashCountHistoryBody"><tr><td colspan="9" style="text-align:center;color:var(--text-3);">No counts recorded yet</td></tr></tbody></table>
+  </div></div></div>
+ </div>
+
+ <!-- User Modal -->
+ <div class="modal-overlay" id="userModal">
+  <div class="modal" style="max-width:460px;">
+   <div class="modal-header"><span class="modal-title" id="userModalTitle">Add User</span><button class="modal-close" onclick="closeModal('userModal')">&times;</button></div>
+   <div class="modal-body" style="padding:20px;">
+    <input type="hidden" id="userModalId">
+    <div class="form-group"><label class="form-label">Username *</label><input type="text" id="userModalUsername" class="form-input" placeholder="e.g. jdelacruz" autocomplete="off"></div>
+    <div class="form-group"><label class="form-label">Full Name</label><input type="text" id="userModalFullName" class="form-input" placeholder="e.g. Juan dela Cruz"></div>
+    <div class="form-group"><label class="form-label">Role *</label>
+     <select id="userModalRole" class="form-select">
+      <option value="cashier">Cashier — Products, Categories, Cash Count only</option>
+      <option value="admin">Admin — Full access</option>
+      <option value="accountant">Accountant — Admin access (no user management)</option>
+     </select>
+    </div>
+    <div class="form-group"><label class="form-label" id="userModalPwLabel">Password *</label><input type="password" id="userModalPassword" class="form-input" placeholder="Enter password" autocomplete="new-password"></div>
+    <div class="form-group" id="userModalStatusGroup" style="display:none;"><label class="form-label">Status</label>
+     <select id="userModalStatus" class="form-select"><option value="true">Active</option><option value="false">Inactive</option></select>
+    </div>
+   </div>
+   <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('userModal')">Cancel</button><button class="btn btn-primary" onclick="saveUser()">Save User</button></div>
+  </div>
+ </div>
+
+ <!-- Cash Count New Modal -->
+ <div class="modal-overlay" id="cashCountModal">
+  <div class="modal modal-lg" style="max-width:680px;">
+   <div class="modal-header"><span class="modal-title">New Cash Register Count</span><button class="modal-close" onclick="closeModal('cashCountModal')">&times;</button></div>
+   <div class="modal-body" style="padding:20px;">
+    <div class="form-row" style="margin-bottom:16px;">
+     <div class="form-group"><label class="form-label">Count Date</label><input type="date" id="cashCountDate" class="form-input"></div>
+     <div class="form-group">
+      <label class="form-label">Shift #</label>
+      <input type="number" id="cashCountShiftNumber" class="form-input" min="1" max="99" value="1" style="width:90px;">
+      <div id="cashCountShiftHint" style="font-size:11px;color:var(--text-3);margin-top:3px;"></div>
+     </div>
+     <div class="form-group"><label class="form-label">Notes</label><input type="text" id="cashCountNotes" class="form-input" placeholder="e.g. End-of-day count"></div>
+    </div>
+    <div style="margin-bottom:20px;"><div style="font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-2);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">Banknotes (Bills)</div><div class="cash-count-grid" id="billsGrid"></div></div>
+    <div style="margin-bottom:20px;"><div style="font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-2);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">Coins</div><div class="cash-count-grid" id="coinsGrid"></div></div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:16px;display:flex;gap:24px;flex-wrap:wrap;align-items:center;justify-content:space-between;">
+     <div style="display:flex;gap:24px;flex-wrap:wrap;">
+      <div><div style="font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;">Bills Total</div><div style="font-size:18px;font-weight:700;" id="ccBillsTotal">&#8369;0.00</div></div>
+      <div><div style="font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;">Coins Total</div><div style="font-size:18px;font-weight:700;" id="ccCoinsTotal">&#8369;0.00</div></div>
+     </div>
+     <div style="text-align:right;"><div style="font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;">Grand Total</div><div style="font-size:26px;font-weight:800;color:var(--accent);" id="ccGrandTotal">&#8369;0.00</div></div>
+    </div>
+    <div style="margin-top:14px;display:flex;align-items:center;gap:10px;">
+     <input type="checkbox" id="cashCountPostAccounting" style="width:16px;height:16px;cursor:pointer;" checked>
+     <label for="cashCountPostAccounting" style="font-size:13px;cursor:pointer;color:var(--text-2);">Post adjustment journal entry to <strong>Account 1001 &mdash; Cash on Hand</strong></label>
+    </div>
+   </div>
+   <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('cashCountModal')">Cancel</button><button class="btn btn-primary" onclick="saveCashCount()">Save Count</button></div>
+  </div>
+ </div>
+
+ <!-- Cash Count Detail Modal -->
+ <div class="modal-overlay" id="cashCountDetailModal">
+  <div class="modal" style="max-width:560px;">
+   <div class="modal-header"><span class="modal-title">Cash Count Detail</span><button class="modal-close" onclick="closeModal('cashCountDetailModal')">&times;</button></div>
+   <div class="modal-body" id="cashCountDetailBody" style="padding:20px;"></div>
+   <div class="modal-footer"><button class="btn btn-secondary" onclick="printCashCount()">Print</button><button class="btn btn-primary" onclick="closeModal('cashCountDetailModal')">Close</button></div>
+  </div>
+ </div>
+
+ <!-- Toast Container -->
+ <div class="toast-container" id="toastContainer"></div>
+
+  <script src="admin.js"></script>
+
+</body>
+</html>

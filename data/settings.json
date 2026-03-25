@@ -1,0 +1,9 @@
+{
+  "canteenName": "MBC Company Canteen",
+  "taxRate": 0.12,
+  "currency": "₱",
+  "marginAlertThreshold": 30,
+  "lowStockDefaultThreshold": 10,
+  "sessionTimeoutMinutes": 30,
+  "cogsMode": "per_month"
+}

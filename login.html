@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - MBCPOS</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="icon"></div>
+        <h1>MBCPOS</h1>
+        <p>Company Canteen POS System</p>
+      </div>
+      
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input type="text" id="username" class="form-input" placeholder="Enter username" required autofocus>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" id="password" class="form-input" placeholder="Enter password" required>
+        </div>
+        
+        <div id="loginError" class="alert alert-danger" style="display: none;"></div>
+        
+        <button type="submit" class="btn-login" id="loginBtn">
+          <span>Sign In</span>
+        </button>
+      </form>
+      
+      <div class="login-footer">
+        <p>Default: admin / admin123</p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="version-info">v3.0.0</div>
+
+  <script>
+    // Check if already logged in
+    const token = localStorage.getItem('mbcpos_token');
+    if (token) {
+      window.location.href = '/';
+    }
+    
+    // Check for timeout reason
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('reason') === 'timeout') {
+      document.getElementById('loginError').textContent = 'Session expired. Please login again.';
+      document.getElementById('loginError').style.display = 'block';
+    }
+    
+    async function handleLogin(e) {
+      e.preventDefault();
+      
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const btn = document.getElementById('loginBtn');
+      const errorDiv = document.getElementById('loginError');
+      
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Signing in...';
+      errorDiv.style.display = 'none';
+      
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        
+        const data = await res.json();
+        
+        if (res.ok) {
+          localStorage.setItem('mbcpos_token', data.token);
+          localStorage.setItem('mbcpos_user', JSON.stringify(data.user));
+          
+          // Redirect based on role
+          if (data.user.role === 'cashier') {
+            window.location.href = '/admin.html';
+          } else if (data.user.role === 'admin' || data.user.role === 'accountant') {
+            window.location.href = '/admin.html';
+          } else {
+            window.location.href = '/';
+          }
+        } else {
+          errorDiv.textContent = data.error || 'Invalid credentials';
+          errorDiv.style.display = 'block';
+        }
+      } catch (err) {
+        errorDiv.textContent = 'Network error. Please try again.';
+        errorDiv.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>Sign In</span>';
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MBCPOS - Register</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Top Navigation -->
+  <nav class="top-nav">
+    <div class="nav-logo">MBC POS</div>
+    <div class="nav-links">
+      <a href="/" class="nav-link active">Register</a>
+      <a href="/admin.html" class="nav-link">Admin</a>
+    </div>
+    <div class="nav-user">
+      <span id="userName">Cashier</span>
+      <button onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <!-- Main Register Container -->
+  <div class="register-container">
+    <!-- Product Section -->
+    <div class="product-section">
+      <!-- Category Tabs -->
+      <div class="category-tabs" id="categoryTabs">
+        <button class="category-tab active" data-category="">All</button>
+      </div>
+      
+      <!-- Product Grid -->
+      <div class="product-grid" id="productGrid"></div>
+    </div>
+
+    <!-- Cart Panel -->
+    <div class="cart-panel">
+      <div class="cart-header">
+        <h3>Current Order</h3>
+        <span id="itemCount">0 items</span>
+      </div>
+      
+      <div class="cart-items" id="cartItems">
+        <div class="empty-state">
+          <p>No items in cart</p>
+        </div>
+      </div>
+      
+      <div class="cart-summary">
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <span id="subtotal">₱0.00</span>
+        </div>
+        <div class="summary-row">
+          <span>Tax (8%)</span>
+          <span id="tax">₱0.00</span>
+        </div>
+        <div class="discount-input">
+          <span>Discount %</span>
+          <input type="number" id="discountInput" min="0" max="100" value="0" onchange="updateCart()">
+        </div>
+        <div class="summary-row total">
+          <span>Total</span>
+          <span id="total">₱0.00</span>
+        </div>
+      </div>
+      
+      <div class="payment-buttons">
+        <button class="payment-btn cash" onclick="processPayment('cash')">
+          <span class="icon"></span>
+          <span>Cash</span>
+        </button>
+        <button class="payment-btn salary" onclick="showEmployeeLookup()">
+          <span class="icon"></span>
+          <span>Salary</span>
+        </button>
+      </div>
+      
+      <!-- Employee Lookup Section -->
+      <div class="employee-lookup" id="employeeLookup" style="display: none;">
+        <h4>Employee Lookup</h4>
+        <div class="form-group">
+          <input type="text" id="employeeIdInput" class="form-input" placeholder="Enter Employee ID" onkeypress="if(event.key==='Enter')lookupEmployee()">
+        </div>
+        <button class="btn btn-primary" onclick="lookupEmployee()">Lookup</button>
+        <button class="btn btn-ghost" onclick="hideEmployeeLookup()">Cancel</button>
+        <div id="employeeResult"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment Modal -->
+  <div class="modal-overlay" id="paymentModal">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">Cash Payment</span>
+        <button class="modal-close" onclick="closeModal('paymentModal')">&times;</button>
+      </div>
+      <div class="payment-modal-body">
+        <div class="total-display">
+          <div class="total-label">Total Amount</div>
+          <div class="total-amount" id="paymentTotal">₱0.00</div>
+        </div>
+        <div class="tendered-input">
+          <label>Amount Tendered</label>
+          <input type="number" id="tenderedAmount" class="form-input" step="0.01" oninput="calculateChange()">
+        </div>
+        <div class="change-display" id="changeDisplay">
+          <div class="label">Change</div>
+          <div class="amount" id="changeAmount">₱0.00</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('paymentModal')">Cancel</button>
+        <button class="btn btn-primary" id="confirmPaymentBtn" onclick="confirmCashPayment()" disabled>Confirm Payment</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Salary Confirm Modal -->
+  <div class="modal-overlay" id="salaryModal">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">Confirm Salary Deduction</span>
+        <button class="modal-close" onclick="closeModal('salaryModal')">&times;</button>
+      </div>
+      <div class="modal-body salary-confirm-modal">
+        <div class="employee-info" id="salaryEmployeeInfo"></div>
+        <div class="items-list">
+          <h4>Items</h4>
+          <div id="salaryItemsList"></div>
+        </div>
+        <div class="totals-section" id="salaryTotals"></div>
+        <div class="notice">
+          This amount will be deducted from the employee's salary.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('salaryModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="confirmSalaryPayment()">Confirm Deduction</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Receipt Modal -->
+  <div class="modal-overlay" id="receiptModal">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">Receipt</span>
+        <button class="modal-close" onclick="closeModal('receiptModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="receiptContent"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="printReceipt()">Print</button>
+        <button class="btn btn-primary" onclick="closeReceipt()">New Order</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Employee Modal -->
+  <div class="modal-overlay" id="addEmployeeModal">
+    <div class="modal" style="max-width:420px;">
+      <div class="modal-header">
+        <span class="modal-title">Add New Employee</span>
+        <button class="modal-close" onclick="closeAddEmployeeModal()">&times;</button>
+      </div>
+      <div class="modal-body" style="padding:20px;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:13px;color:var(--text-secondary);">
+          Employee ID <strong id="addEmpIdDisplay"></strong> was not found. Fill in the details below to add them.
+        </div>
+        <div class="form-group">
+          <label class="form-label">Employee ID</label>
+          <input type="text" id="newEmpId" class="form-input" readonly>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Full Name <span style="color:var(--red)">*</span></label>
+          <input type="text" id="newEmpName" class="form-input" placeholder="Juan dela Cruz">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Department</label>
+          <input type="text" id="newEmpDept" class="form-input" placeholder="e.g. Engineering">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Position</label>
+          <input type="text" id="newEmpPos" class="form-input" placeholder="e.g. Staff">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeAddEmployeeModal()">Cancel</button>
+        <button class="btn btn-primary" id="addEmpSaveBtn" onclick="saveNewEmployee()">Add &amp; Charge</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
