@@ -523,6 +523,31 @@ app.post('/api/cash-register-counts', authenticateToken, (req, res) => {
   res.status(201).json(entry);
 });
 
+app.put('/api/cash-register-counts/:id', authenticateToken, (req, res) => {
+  const { id } = req.params;
+  const { date, denomination_counts, notes, shiftNumber } = req.body;
+  if (!denomination_counts || typeof denomination_counts !== 'object') return res.status(400).json({ error: 'denomination_counts is required' });
+  const shiftNum = parseInt(shiftNumber) || 1;
+  if (shiftNum < 1 || shiftNum > 99) return res.status(400).json({ error: 'shiftNumber must be between 1 and 99' });
+  const counts = readFile(FILES.cashRegisterCounts);
+  const idx = counts.findIndex(c => c.id === id);
+  if (idx === -1) return res.status(404).json({ error: 'Cash count not found' });
+  let total = 0;
+  const breakdown = [];
+  for (const [denom, count] of Object.entries(denomination_counts)) {
+    const dv = parseFloat(denom), qty = parseInt(count) || 0;
+    if (qty < 0) return res.status(400).json({ error: 'Invalid count' });
+    const sub = Math.round(dv * qty * 100) / 100;
+    total += sub; breakdown.push({ denomination: dv, count: qty, subtotal: sub });
+  }
+  total = Math.round(total * 100) / 100;
+  const existing = counts[idx];
+  counts[idx] = { ...existing, date: date || existing.date, shift: 'shift' + shiftNum, shiftNumber: shiftNum, denomination_counts, breakdown, total, notes: notes || '', updatedAt: new Date().toISOString(), updatedBy: req.user.id, updatedByName: req.user.fullName || req.user.username };
+  writeFile(FILES.cashRegisterCounts, counts);
+  logAudit('UPDATE', 'CASH_COUNT', id, 'Cash count updated ₱' + total.toFixed(2), { total }, req.user.id, req.user.fullName);
+  res.json(counts[idx]);
+});
+
 // ═══════════════════════════════════════════════════════════
 // PRODUCTS ROUTES
 // ═══════════════════════════════════════════════════════════

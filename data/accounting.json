@@ -427,6 +427,79 @@
           "credit": 795.2
         }
       ]
+    },
+    {
+      "id": "JE-CCT-1774884808107",
+      "date": "2026-03-30",
+      "description": "Cash Count - 2026-03-30 Shift 1 - ₱1870.00",
+      "reference": "CCT-1774884808105",
+      "type": "cash_count",
+      "lines": [
+        {
+          "accountCode": "1001",
+          "accountName": "Cash on Hand",
+          "debit": 1870,
+          "credit": 0
+        },
+        {
+          "accountCode": "3002",
+          "accountName": "Retained Earnings",
+          "debit": 0,
+          "credit": 1870
+        }
+      ],
+      "createdBy": "admin-001",
+      "createdAt": "2026-03-30T15:33:28.107Z"
+    },
+    {
+      "id": "JE-1774884833203",
+      "date": "2026-03-30T15:33:53.203Z",
+      "description": "Sale - cash - 1 items",
+      "reference": "d540c9da-9933-4fd0-a5df-36edd13a928d",
+      "type": "auto",
+      "lines": [
+        {
+          "accountCode": "1001",
+          "accountName": "Cash on Hand",
+          "debit": 100.8,
+          "credit": 0
+        },
+        {
+          "accountCode": "4001",
+          "accountName": "Sales Revenue",
+          "debit": 0,
+          "credit": 89.99999999999999
+        },
+        {
+          "accountCode": "2002",
+          "accountName": "VAT / Tax Payable",
+          "debit": 0,
+          "credit": 10.800000000000011
+        }
+      ]
+    },
+    {
+      "id": "JE-CCT-1774884863929",
+      "date": "2026-03-30",
+      "description": "Cash Count - 2026-03-30 Shift 2 - ₱1870.80",
+      "reference": "CCT-1774884863928",
+      "type": "cash_count",
+      "lines": [
+        {
+          "accountCode": "1001",
+          "accountName": "Cash on Hand",
+          "debit": 0.8,
+          "credit": 0
+        },
+        {
+          "accountCode": "3002",
+          "accountName": "Retained Earnings",
+          "debit": 0,
+          "credit": 0.8
+        }
+      ],
+      "createdBy": "admin-001",
+      "createdAt": "2026-03-30T15:34:23.929Z"
     }
   ]
 }

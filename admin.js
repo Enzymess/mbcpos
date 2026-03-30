@@ -2468,7 +2468,7 @@ async function loadCashCountTab() {
       const sn = e.shiftNumber || parseInt((e.shift||'shift1').replace('shift',''));
       const hue = ((sn - 1) * 67) % 360;
       const shiftBadge = `<span class="badge" style="background:hsl(${hue},55%,38%);color:#fff;font-size:11px;">Shift ${sn}</span>`;
-      return `<tr><td>${e.date}</td><td>${shiftBadge}</td><td>${e.countedByName||'—'}</td><td>${c}${bt.toFixed(2)}</td><td>${c}${ct.toFixed(2)}</td><td style="font-weight:700;color:var(--accent);">${c}${e.total.toFixed(2)}</td><td>${e.journalEntryId?'<span class="badge badge-success" style="font-size:11px;">Posted</span>':'<span class="badge" style="font-size:11px;background:var(--border);color:var(--text-3);">None</span>'}</td><td style="color:var(--text-3);font-size:13px;">${e.notes||'—'}</td><td><button class="btn btn-sm btn-secondary" onclick="viewCashCountDetail('${e.id}')">View</button></td></tr>`;
+      return `<tr><td>${e.date}</td><td>${shiftBadge}</td><td>${e.countedByName||'—'}</td><td>${c}${bt.toFixed(2)}</td><td>${c}${ct.toFixed(2)}</td><td style="font-weight:700;color:var(--accent);">${c}${e.total.toFixed(2)}</td><td>${e.journalEntryId?'<span class="badge badge-success" style="font-size:11px;">Posted</span>':'<span class="badge" style="font-size:11px;background:var(--border);color:var(--text-3);">None</span>'}</td><td style="color:var(--text-3);font-size:13px;">${e.notes||'—'}</td><td style="white-space:nowrap;"><button class="btn btn-sm btn-secondary" onclick="viewCashCountDetail('${e.id}')">View</button> <button class="btn btn-sm btn-warning" style="margin-left:4px;" onclick="editCashCount('${e.id}')">Edit</button></td></tr>`;
     }).join('');
 
     // Auto-load today's shift comparison
@@ -2479,10 +2479,16 @@ async function loadCashCountTab() {
 }
 
 async function showCashCountModal() {
+  document.getElementById('cashCountEditId').value = '';
+  const titleEl = document.getElementById('cashCountModalTitle');
+  if (titleEl) titleEl.textContent = 'New Cash Register Count';
   const de = document.getElementById('cashCountDate'); if (de) de.value = new Date().toISOString().slice(0,10);
   const ne = document.getElementById('cashCountNotes'); if (ne) ne.value = '';
   const bg = document.getElementById('billsGrid'); if (bg) bg.innerHTML = PH_BILLS.map(_denomCard).join('');
   const cg = document.getElementById('coinsGrid'); if (cg) cg.innerHTML = PH_COINS.map(_denomCard).join('');
+  // Restore post-accounting checkbox visibility for new counts
+  const postCheck = document.getElementById('cashCountPostAccounting');
+  if (postCheck) { postCheck.closest('div').style.display = ''; postCheck.checked = true; }
   recalcCashCount();
   // Auto-suggest next shift number for today
   try {
@@ -2512,17 +2518,70 @@ function recalcCashCount() {
   if(el('ccGrandTotal'))el('ccGrandTotal').textContent=c+(bt+ct).toFixed(2);
 }
 async function saveCashCount() {
+  const editId = document.getElementById('cashCountEditId').value.trim();
   const date=document.getElementById('cashCountDate').value,notes=document.getElementById('cashCountNotes').value.trim(),postToAccounting=document.getElementById('cashCountPostAccounting').checked;
   const shiftNumber=parseInt(document.getElementById('cashCountShiftNumber')?.value)||1;
   if(shiftNumber<1||shiftNumber>99){showToast('Shift number must be between 1 and 99','error');return;}
   const dc={};[...PH_BILLS,...PH_COINS].forEach(d=>{const k='denom_'+String(d.value).replace('.','_'),qty=parseInt(document.getElementById(k)?.value)||0;if(qty>0)dc[d.value]=qty;});
   if(!Object.keys(dc).length){showToast('Please enter at least one denomination count','error');return;}
   try {
-    const res=await fetch('/api/cash-register-counts',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${state.token}`},body:JSON.stringify({date,denomination_counts:dc,notes,postToAccounting,shiftNumber})});
+    const isEdit = !!editId;
+    const url = isEdit ? `/api/cash-register-counts/${editId}` : '/api/cash-register-counts';
+    const method = isEdit ? 'PUT' : 'POST';
+    const body = isEdit
+      ? JSON.stringify({date,denomination_counts:dc,notes,shiftNumber})
+      : JSON.stringify({date,denomination_counts:dc,notes,postToAccounting,shiftNumber});
+    const res=await fetch(url,{method,headers:{'Content-Type':'application/json',Authorization:`Bearer ${state.token}`},body});
     const data=await res.json();
-    if(res.ok){showToast(`Shift ${shiftNumber} count saved — ${state.settings.currency||'₱'}${data.total.toFixed(2)}`,'success');closeModal('cashCountModal');loadCashCountTab();}
-    else showToast(data.error||'Failed to save cash count','error');
+    if(res.ok){
+      showToast(isEdit ? `Count updated — ${state.settings.currency||'₱'}${data.total.toFixed(2)}` : `Shift ${shiftNumber} count saved — ${state.settings.currency||'₱'}${data.total.toFixed(2)}`,'success');
+      closeModal('cashCountModal');
+      loadCashCountTab();
+    } else showToast(data.error||'Failed to save cash count','error');
   }catch(e){showToast('Failed to save cash count','error');}
+}
+async function editCashCount(id) {
+  try {
+    const res = await fetch('/api/cash-register-counts', { headers: { Authorization: `Bearer ${state.token}` } });
+    if (!res.ok) { showToast('Failed to load cash count', 'error'); return; }
+    const counts = await res.json();
+    const entry = counts.find(x => x.id === id);
+    if (!entry) { showToast('Cash count not found', 'error'); return; }
+
+    // Populate modal fields
+    document.getElementById('cashCountEditId').value = entry.id;
+    const titleEl = document.getElementById('cashCountModalTitle');
+    if (titleEl) titleEl.textContent = `Edit Cash Count — ${entry.date} Shift ${entry.shiftNumber || 1}`;
+
+    const de = document.getElementById('cashCountDate'); if (de) de.value = entry.date;
+    const ne = document.getElementById('cashCountNotes'); if (ne) ne.value = entry.notes || '';
+    const sn = document.getElementById('cashCountShiftNumber'); if (sn) sn.value = entry.shiftNumber || 1;
+    const hint = document.getElementById('cashCountShiftHint'); if (hint) hint.textContent = 'Editing existing count — change shift number if needed.';
+
+    // Render denom cards
+    const bg = document.getElementById('billsGrid'); if (bg) bg.innerHTML = PH_BILLS.map(_denomCard).join('');
+    const cg = document.getElementById('coinsGrid'); if (cg) cg.innerHTML = PH_COINS.map(_denomCard).join('');
+
+    // Pre-fill counts from entry
+    const dc = entry.denomination_counts || {};
+    Object.entries(dc).forEach(([denom, qty]) => {
+      const k = 'denom_' + String(denom).replace('.', '_');
+      const el = document.getElementById(k);
+      if (el) el.value = qty;
+    });
+    recalcCashCount();
+
+    // Hide the "Post to accounting" checkbox in edit mode (no re-posting)
+    const postCheck = document.getElementById('cashCountPostAccounting');
+    if (postCheck) postCheck.closest('div').style.display = 'none';
+
+    document.getElementById('cashCountModal').classList.add('active');
+  } catch(e) { showToast('Failed to load cash count for editing', 'error'); }
+}
+function editCashCountFromDetail() {
+  if (!_currentCashCountDetail) return;
+  closeModal('cashCountDetailModal');
+  editCashCount(_currentCashCountDetail.id);
 }
 async function loadShiftComparison() {
   const c = state.settings.currency || '₱';

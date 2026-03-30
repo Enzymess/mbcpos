@@ -172,5 +172,26 @@
     "paymentMethod": "cash",
     "processedBy": "Administrator",
     "processedById": "admin-001"
+  },
+  {
+    "id": "d540c9da-9933-4fd0-a5df-36edd13a928d",
+    "date": "2026-03-30T15:33:53.203Z",
+    "items": [
+      {
+        "id": "prod_1773137040226_tao88",
+        "name": "Sunny Side Up Egg",
+        "price": 30,
+        "cost": 0,
+        "qty": 3,
+        "total": 90
+      }
+    ],
+    "total": 100.8,
+    "subtotal": 90,
+    "discount": 0,
+    "tax": 10.799999999999999,
+    "paymentMethod": "cash",
+    "processedBy": "Administrator",
+    "processedById": "admin-001"
   }
 ]

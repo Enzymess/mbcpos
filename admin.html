@@ -1378,10 +1378,11 @@
   </div>
  </div>
 
- <!-- Cash Count New Modal -->
+ <!-- Cash Count New/Edit Modal -->
  <div class="modal-overlay" id="cashCountModal">
   <div class="modal modal-lg" style="max-width:680px;">
-   <div class="modal-header"><span class="modal-title">New Cash Register Count</span><button class="modal-close" onclick="closeModal('cashCountModal')">&times;</button></div>
+   <div class="modal-header"><span class="modal-title" id="cashCountModalTitle">New Cash Register Count</span><button class="modal-close" onclick="closeModal('cashCountModal')">&times;</button></div>
+   <input type="hidden" id="cashCountEditId">
    <div class="modal-body" style="padding:20px;">
     <div class="form-row" style="margin-bottom:16px;">
      <div class="form-group"><label class="form-label">Count Date</label><input type="date" id="cashCountDate" class="form-input"></div>
@@ -1415,7 +1416,7 @@
   <div class="modal" style="max-width:560px;">
    <div class="modal-header"><span class="modal-title">Cash Count Detail</span><button class="modal-close" onclick="closeModal('cashCountDetailModal')">&times;</button></div>
    <div class="modal-body" id="cashCountDetailBody" style="padding:20px;"></div>
-   <div class="modal-footer"><button class="btn btn-secondary" onclick="printCashCount()">Print</button><button class="btn btn-primary" onclick="closeModal('cashCountDetailModal')">Close</button></div>
+   <div class="modal-footer"><button class="btn btn-secondary" onclick="printCashCount()">Print</button><button class="btn btn-warning" onclick="editCashCountFromDetail()">Edit</button><button class="btn btn-primary" onclick="closeModal('cashCountDetailModal')">Close</button></div>
   </div>
  </div>
 

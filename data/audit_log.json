@@ -1,5 +1,82 @@
 [
   {
+    "id": "95dd8e98-5161-40e5-8a4b-bb301983a711",
+    "timestamp": "2026-03-30T15:43:46.520Z",
+    "action": "CREATE",
+    "entityType": "CASH_COUNT",
+    "entityId": "CCT-1774885426519",
+    "entityName": "Cash count ₱1970.80",
+    "changeDetails": {
+      "total": 1970.8
+    },
+    "userId": "admin-001",
+    "userFullName": "Administrator"
+  },
+  {
+    "id": "c0e12aa4-58bf-4a12-8248-85b60b4afd4b",
+    "timestamp": "2026-03-30T15:43:25.991Z",
+    "action": "UPDATE",
+    "entityType": "CASH_COUNT",
+    "entityId": "CCT-1774884863928",
+    "entityName": "Cash count updated ₱1970.80",
+    "changeDetails": {
+      "total": 1970.8
+    },
+    "userId": "admin-001",
+    "userFullName": "Administrator"
+  },
+  {
+    "id": "f9ee5b02-29e3-4998-9be3-72e0d0a3b666",
+    "timestamp": "2026-03-30T15:34:23.931Z",
+    "action": "CREATE",
+    "entityType": "CASH_COUNT",
+    "entityId": "CCT-1774884863928",
+    "entityName": "Cash count ₱1870.80",
+    "changeDetails": {
+      "total": 1870.8
+    },
+    "userId": "admin-001",
+    "userFullName": "Administrator"
+  },
+  {
+    "id": "fb8a3917-44e0-49cf-baf9-6b33a9284d7c",
+    "timestamp": "2026-03-30T15:33:53.207Z",
+    "action": "CREATE",
+    "entityType": "TRANSACTION",
+    "entityId": "d540c9da-9933-4fd0-a5df-36edd13a928d",
+    "entityName": "Sale cash",
+    "changeDetails": {
+      "total": 100.8,
+      "items": 1
+    },
+    "userId": "admin-001",
+    "userFullName": "Administrator"
+  },
+  {
+    "id": "09396787-1d87-46f8-b07b-d8a746855a5f",
+    "timestamp": "2026-03-30T15:33:28.108Z",
+    "action": "CREATE",
+    "entityType": "CASH_COUNT",
+    "entityId": "CCT-1774884808105",
+    "entityName": "Cash count ₱1870.00",
+    "changeDetails": {
+      "total": 1870
+    },
+    "userId": "admin-001",
+    "userFullName": "Administrator"
+  },
+  {
+    "id": "3af25d7a-298e-42a5-a438-6d1cd0171b52",
+    "timestamp": "2026-03-30T15:33:06.254Z",
+    "action": "LOGIN",
+    "entityType": "USER",
+    "entityId": "admin-001",
+    "entityName": "Administrator",
+    "changeDetails": null,
+    "userId": "admin-001",
+    "userFullName": "Administrator"
+  },
+  {
     "id": "3b1b69e6-c5b7-41f3-a64f-2caabd67b4cc",
     "timestamp": "2026-03-25T12:24:27.980Z",
     "action": "LOGIN",
