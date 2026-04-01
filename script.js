@@ -327,14 +327,15 @@ async function processCardOrDigital(method) {
 
 function showEmployeeLookup() {
   if (state.cart.length === 0) { showToast('Cart is empty', 'error'); return; }
-  document.getElementById('employeeLookup').style.display = 'block';
+  document.getElementById('employeeLookup').classList.add('active');
   document.getElementById('employeeIdInput').value = '';
-  document.getElementById('employeeIdInput').focus();
   document.getElementById('employeeResult').innerHTML = '';
+  // Small delay so the modal is visible before focusing
+  setTimeout(() => document.getElementById('employeeIdInput').focus(), 80);
 }
 
 function hideEmployeeLookup() {
-  document.getElementById('employeeLookup').style.display = 'none';
+  document.getElementById('employeeLookup').classList.remove('active');
   state.currentEmployee = null;
 }
 
@@ -531,7 +532,8 @@ function showSalaryConfirm() {
 async function confirmSalaryPayment() {
   await completeTransaction('salary', { employeeId: state.currentEmployee.employeeId });
   closeModal('salaryModal');
-  hideEmployeeLookup();
+  document.getElementById('employeeLookup').classList.remove('active');
+  state.currentEmployee = null;
 }
 
 // ═══════════════════════════════════════════════════════════

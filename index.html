@@ -72,18 +72,32 @@
         </button>
         <button class="payment-btn salary" onclick="showEmployeeLookup()">
           <span class="icon"></span>
-          <span>Salary</span>
+          <span>Credit</span>
         </button>
       </div>
       
-      <!-- Employee Lookup Section -->
-      <div class="employee-lookup" id="employeeLookup" style="display: none;">
-        <h4>Employee Lookup</h4>
+
+    </div>
+  </div>
+
+
+  <!-- Employee Lookup Modal -->
+  <div class="modal-overlay" id="employeeLookup">
+    <div class="modal" style="max-width:400px;">
+      <div class="modal-header">
+        <span class="modal-title">Employee Lookup</span>
+        <button class="modal-close" onclick="hideEmployeeLookup()">&times;</button>
+      </div>
+      <div class="modal-body" style="padding:20px;">
         <div class="form-group">
-          <input type="text" id="employeeIdInput" class="form-input" placeholder="Enter Employee ID" onkeypress="if(event.key==='Enter')lookupEmployee()">
+          <label class="form-label">Employee ID</label>
+          <input type="text" id="employeeIdInput" class="form-input" placeholder="Enter Employee ID"
+            onkeypress="if(event.key==='Enter')lookupEmployee()" autofocus>
         </div>
-        <button class="btn btn-primary" onclick="lookupEmployee()">Lookup</button>
-        <button class="btn btn-ghost" onclick="hideEmployeeLookup()">Cancel</button>
+        <div style="display:flex;gap:8px;margin-bottom:12px;">
+          <button class="btn btn-primary" style="flex:1;" onclick="lookupEmployee()">Lookup</button>
+          <button class="btn btn-ghost" onclick="hideEmployeeLookup()">Cancel</button>
+        </div>
         <div id="employeeResult"></div>
       </div>
     </div>
