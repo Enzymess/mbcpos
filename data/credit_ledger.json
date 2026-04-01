@@ -44,5 +44,25 @@
     "isSettled": true,
     "settledAt": "2026-03-25T12:18:15.802Z",
     "settledBy": "admin-001"
+  },
+  {
+    "id": "a9487ad6-0a46-4db6-8eaf-ac9a6aaa8beb",
+    "transactionId": "0b1414b3-0af8-4a7d-ba8a-666f692ab63b",
+    "employeeId": "10015",
+    "employeeName": "enzo",
+    "type": "charge",
+    "amount": 414.4,
+    "items": [
+      {
+        "name": "Pork Humba",
+        "qty": 2
+      },
+      {
+        "name": "Bicol Express",
+        "qty": 2
+      }
+    ],
+    "date": "2026-04-01T00:50:50.599Z",
+    "isSettled": false
   }
 ]

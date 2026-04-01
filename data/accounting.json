@@ -500,6 +500,33 @@
       ],
       "createdBy": "admin-001",
       "createdAt": "2026-03-30T15:34:23.929Z"
+    },
+    {
+      "id": "JE-1775004650599",
+      "date": "2026-04-01T00:50:50.599Z",
+      "description": "Sale - salary - 2 items",
+      "reference": "0b1414b3-0af8-4a7d-ba8a-666f692ab63b",
+      "type": "auto",
+      "lines": [
+        {
+          "accountCode": "1002",
+          "accountName": "Accounts Receivable - Employees",
+          "debit": 414.4,
+          "credit": 0
+        },
+        {
+          "accountCode": "4002",
+          "accountName": "Salary Deduction Revenue",
+          "debit": 0,
+          "credit": 369.99999999999994
+        },
+        {
+          "accountCode": "2002",
+          "accountName": "VAT / Tax Payable",
+          "debit": 0,
+          "credit": 44.400000000000034
+        }
+      ]
     }
   ]
 }

@@ -33,7 +33,8 @@ const state = {
   categories: [],
   cart: [],
   currentEmployee: null,
-  currentPaymentMethod: null
+  currentPaymentMethod: null,
+  bestsellers: { globalTopId: null, categoryTop: {}, qtySold: {} }
 };
 
 // ═══════════════════════════════════════════════════════════
@@ -52,6 +53,7 @@ async function init() {
   await loadSettings();
   await loadProducts();
   await loadCategories();
+  await loadBestsellers();
 
   console.log('Register initialized');
   REGISTER_AUTO_UPDATE.start();
@@ -91,6 +93,15 @@ async function loadCategories() {
   }
 }
 
+async function loadBestsellers() {
+  try {
+    const res = await fetch('/api/bestsellers');
+    if (res.ok) state.bestsellers = await res.json();
+  } catch (err) {
+    console.error('Failed to load bestsellers:', err);
+  }
+}
+
 // ═══════════════════════════════════════════════════════════
 // RENDER FUNCTIONS
 // ═══════════════════════════════════════════════════════════
@@ -112,17 +123,46 @@ function filterByCategory(categoryId) {
   renderProducts(categoryId);
 }
 
+function getBestSellerLabel(productId, categoryFilter) {
+  const bs = state.bestsellers;
+  if (!bs) return null;
+  // Category best seller takes priority when a category is active
+  if (categoryFilter && bs.categoryTop[categoryFilter]?.id === productId) {
+    const cat = state.categories.find(c => c.id === categoryFilter);
+    return cat ? `🏆 Best in ${cat.name}` : '🏆 Category Best Seller';
+  }
+  // Global best seller shown when viewing All or when no category badge applies
+  if (bs.globalTopId === productId) {
+    return '🏆 Best Seller';
+  }
+  return null;
+}
+
 function renderProducts(categoryFilter = '') {
   const container = document.getElementById('productGrid');
   let filtered = state.products;
-  if (categoryFilter) filtered = filtered.filter(p => p.category === categoryFilter);
+  if (categoryFilter) filtered = filtered.filter(p => {
+    const tags = Array.isArray(p.categories) ? p.categories : (p.category ? [p.category] : []);
+    return tags.includes(categoryFilter);
+  });
+
+  // Sort: best seller(s) first within the current view
+  filtered = [...filtered].sort((a, b) => {
+    const aLabel = getBestSellerLabel(a.id, categoryFilter);
+    const bLabel = getBestSellerLabel(b.id, categoryFilter);
+    if (aLabel && !bLabel) return -1;
+    if (!aLabel && bLabel) return 1;
+    return 0;
+  });
 
   container.innerHTML = filtered.map(p => {
     const outOfStock = p.stock <= 0;
     const lowStock = p.stock <= (p.lowStockThreshold || 10) && p.stock > 0;
+    const bsLabel = getBestSellerLabel(p.id, categoryFilter);
     return `
-      <div class="product-card ${outOfStock ? 'out-of-stock' : ''}"
+      <div class="product-card ${outOfStock ? 'out-of-stock' : ''} ${bsLabel ? 'best-seller' : ''}"
            onclick="${outOfStock ? '' : `addToCart('${p.id}')`}">
+        ${bsLabel ? `<div class="best-seller-badge">${bsLabel}</div>` : ''}
         <div class="product-image">
           ${p.image
             ? `<img src="${p.image}" alt="${p.name}">`
@@ -628,6 +668,10 @@ function printReceipt() {
 function closeReceipt() {
   closeModal('receiptModal');
   clearCart();
+  // Refresh bestsellers so badges update after each sale
+  loadBestsellers().then(() => renderProducts(
+    document.querySelector('.category-tab.active')?.dataset.category || ''
+  ));
 }
 
 // ═══════════════════════════════════════════════════════════

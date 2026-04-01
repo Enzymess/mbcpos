@@ -287,11 +287,18 @@ function renderProductsGrid() {
   const catFilter = document.getElementById('productCategoryFilter')?.value || '';
   let filtered = state.products;
   if (search) filtered = filtered.filter(p => p.name.toLowerCase().includes(search));
-  if (catFilter) filtered = filtered.filter(p => p.category === catFilter);
+  if (catFilter) filtered = filtered.filter(p => {
+    const tags = Array.isArray(p.categories) ? p.categories : (p.category ? [p.category] : []);
+    return tags.includes(catFilter);
+  });
 
   document.getElementById('productsGridView').innerHTML = filtered.map(p => {
-    const cat      = state.categories.find(c => c.id === p.category);
+    const tags = Array.isArray(p.categories) ? p.categories : (p.category ? [p.category] : []);
+    const cats = tags.map(id => state.categories.find(c => c.id === id)).filter(Boolean);
     const margin = p.price > 0 ? (((p.price - (p.cost || 0)) / p.price) * 100).toFixed(1) : 0;
+    const tagChips = cats.length
+      ? cats.map(c => `<span class="tag-chip-sm" style="background:${c.color || '#888'}">${c.name}</span>`).join('')
+      : '<span class="tag-chip-sm" style="background:#ccc">No Tags</span>';
     return `
       <div class="product-square-card ${margin < 30 ? 'low-margin' : ''}" onclick="editProduct('${p.id}')">
         <div class="product-card-image">
@@ -299,7 +306,7 @@ function renderProductsGrid() {
         </div>
         <div class="product-card-content">
           <div class="product-card-name">${p.name}</div>
-          <div class="product-card-category" style="background:${cat?.color || '#ccc'}">${cat?.name || 'N/A'}</div>
+          <div class="product-card-tags">${tagChips}</div>
           <div class="product-card-price">${formatCurrency(p.price)}</div>
           <div style="font-size:11px;color:var(--text-3);margin-top:2px;">Cost: ${formatCurrency(p.cost || 0)} · ${margin}% margin</div>
           <div class="product-card-stock ${p.stock <= (p.lowStockThreshold || 10) ? 'low' : ''}">Stock: ${p.stock}</div>
@@ -316,11 +323,28 @@ function filterProducts() { renderProductsGrid(); }
 
 function populateCategoryFilters() {
   const sel = document.getElementById('productCategoryFilter');
-  if (sel) sel.innerHTML = '<option value="">All Categories</option>' + state.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-  const modalSel = document.getElementById('productCategory');
-  if (modalSel) modalSel.innerHTML = state.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  if (sel) sel.innerHTML = '<option value="">All Tags</option>' + state.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
   const recSel = document.getElementById('receivingProduct');
   if (recSel) recSel.innerHTML = state.products.map(p => `<option value="${p.id}">${p.name} (Stock: ${p.stock})</option>`).join('');
+}
+
+function renderTagPicker(selectedIds = []) {
+  const container = document.getElementById('productCategoryTags');
+  if (!container) return;
+  container.innerHTML = state.categories.map(c => {
+    const active = selectedIds.includes(c.id);
+    return `<span class="tag-chip ${active ? 'active' : ''}" style="--tag-color:${c.color || '#888'}" data-id="${c.id}" onclick="toggleTag(this)">${c.name}</span>`;
+  }).join('');
+}
+
+function toggleTag(el) {
+  el.classList.toggle('active');
+}
+
+function getSelectedTags() {
+  const container = document.getElementById('productCategoryTags');
+  if (!container) return [];
+  return Array.from(container.querySelectorAll('.tag-chip.active')).map(el => el.dataset.id);
 }
 
 function previewProductImage(input) {
@@ -332,7 +356,14 @@ function previewProductImage(input) {
   }
 }
 
-function showAddProductModal() {
+async function showAddProductModal() {
+  // Ensure categories are loaded before rendering tag picker
+  if (!state.categories.length) {
+    try {
+      const cr = await fetch('/api/categories');
+      if (cr.ok) state.categories = await cr.json();
+    } catch(e) {}
+  }
   ['productId','productName','productPrice','productCost'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
@@ -342,16 +373,30 @@ function showAddProductModal() {
   document.getElementById('productImagePreview').innerHTML = '<span>No image</span>';
   delete document.getElementById('productImagePreview').dataset.image;
   document.getElementById('productImage').value = '';
+  renderTagPicker([]);
   document.getElementById('productModal').classList.add('active');
 }
 
-function editProduct(id) {
-  const p = state.products.find(p => p.id === id);
+async function editProduct(id) {
+  // Ensure categories are loaded (may be empty if called from Dashboard before Products tab)
+  if (!state.categories.length) {
+    try {
+      const cr = await fetch('/api/categories');
+      if (cr.ok) state.categories = await cr.json();
+    } catch(e) {}
+  }
+  // Product may not be in state yet (e.g. called from margin alerts on dashboard)
+  let p = state.products.find(p => p.id === id);
+  if (!p) {
+    try {
+      const pr = await fetch('/api/products', { headers: { 'Authorization': `Bearer ${state.token}` } });
+      if (pr.ok) { state.products = await pr.json(); p = state.products.find(p => p.id === id); }
+    } catch(e) {}
+  }
   if (!p) return;
   document.getElementById('productId').value = p.id;
   document.getElementById('productModalTitle').textContent = 'Edit Product';
   document.getElementById('productName').value = p.name;
-  document.getElementById('productCategory').value = p.category;
   document.getElementById('productPrice').value = p.price;
   document.getElementById('productCost').value = p.cost || 0;
   document.getElementById('productStock').value = p.stock;
@@ -359,6 +404,9 @@ function editProduct(id) {
   if (p.image) { document.getElementById('productImagePreview').innerHTML = `<img src="${p.image}" alt="Preview">`; document.getElementById('productImagePreview').dataset.image = p.image; }
   else { document.getElementById('productImagePreview').innerHTML = '<span>No image</span>'; delete document.getElementById('productImagePreview').dataset.image; }
   document.getElementById('productImage').value = '';
+  // Support both legacy single category and new multi-categories array
+  const selectedTags = Array.isArray(p.categories) ? p.categories : (p.category ? [p.category] : []);
+  renderTagPicker(selectedTags);
   document.getElementById('productModal').classList.add('active');
 }
 
@@ -366,7 +414,7 @@ async function saveProduct() {
   const id = document.getElementById('productId').value;
   const data = {
     name:              document.getElementById('productName').value,
-    category:          document.getElementById('productCategory').value,
+    categories:        getSelectedTags(),
     price:             parseFloat(document.getElementById('productPrice').value),
     cost:              parseFloat(document.getElementById('productCost').value) || 0,
     stock:             parseInt(document.getElementById('productStock').value),
@@ -401,25 +449,38 @@ async function deleteProduct(id) {
 async function loadCategories() {
   try {
     const res = await fetch('/api/categories');
-    if (res.ok) { state.categories = await res.json(); renderCategoriesGrid(); }
+    if (res.ok) {
+      state.categories = await res.json();
+      // Only render the grid when the categories tab element exists and is visible
+      const grid = document.getElementById('categoriesGridView');
+      if (grid) renderCategoriesGrid();
+    }
   } catch (err) { console.error('Failed to load categories:', err); }
 }
 
 function renderCategoriesGrid() {
-  document.getElementById('categoriesGridView').innerHTML = state.categories.map(c => `
+  if (!state.categories.length) {
+    document.getElementById('categoriesGridView').innerHTML = '<div class="empty-state"><p>No categories yet. Add one to get started.</p></div>';
+    return;
+  }
+  document.getElementById('categoriesGridView').innerHTML = state.categories.map(c => {
+    const color = c.color || '#888888';
+    const name  = c.name  || 'Unnamed';
+    return `
     <div class="category-square-card" onclick="editCategory('${c.id}')">
-      <div class="category-card-image" style="background:${c.color}">
-        ${c.image?`<img src="${c.image}" alt="${c.name}">`:`<div class="no-image">${c.name.charAt(0)}</div>`}
+      <div class="category-card-image" style="background:${color}">
+        ${c.image ? `<img src="${c.image}" alt="${name}">` : `<div class="no-image">${name.charAt(0)}</div>`}
       </div>
       <div class="category-card-content">
-        <div class="category-card-name">${c.name}</div>
-        <div class="category-card-color" style="background:${c.color}"></div>
+        <div class="category-card-name">${name}</div>
+        <div class="category-card-color" style="background:${color}"></div>
       </div>
       <div class="category-card-actions">
         <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();editCategory('${c.id}')">Edit</button>
         <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteCategory('${c.id}')">Delete</button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function previewCategoryImage(input) {
@@ -471,7 +532,7 @@ async function saveCategory() {
 }
 
 async function deleteCategory(id) {
-  if (!confirm('Delete this category? All products in this category will also be deleted.')) return;
+  if (!confirm('Delete this tag/category? Products using it will be kept but untagged.')) return;
   try {
     const res = await fetch(`/api/categories/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${state.token}` } });
     if (res.ok) { showToast('Category deleted', 'success'); loadCategories(); }

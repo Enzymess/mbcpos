@@ -1,5 +1,43 @@
 [
   {
+    "id": "0aafea09-ee60-4793-a609-dde6aba07316",
+    "timestamp": "2026-04-01T00:50:50.601Z",
+    "action": "CREATE",
+    "entityType": "TRANSACTION",
+    "entityId": "0b1414b3-0af8-4a7d-ba8a-666f692ab63b",
+    "entityName": "Sale salary",
+    "changeDetails": {
+      "total": 414.4,
+      "items": 2
+    },
+    "userId": "admin-001",
+    "userFullName": "Administrator"
+  },
+  {
+    "id": "2b1b2686-431c-4c2c-aa2d-c0668383944c",
+    "timestamp": "2026-04-01T00:50:48.038Z",
+    "action": "CREATE",
+    "entityType": "EMPLOYEE",
+    "entityId": "fe38ac46-e002-4a40-b96c-07958d3f81c8",
+    "entityName": "enzo",
+    "changeDetails": {
+      "employeeId": "10015"
+    },
+    "userId": "admin-001",
+    "userFullName": "Administrator"
+  },
+  {
+    "id": "46918b76-4688-4528-959e-bbbc9be52b77",
+    "timestamp": "2026-04-01T00:41:58.515Z",
+    "action": "LOGIN",
+    "entityType": "USER",
+    "entityId": "admin-001",
+    "entityName": "Administrator",
+    "changeDetails": null,
+    "userId": "admin-001",
+    "userFullName": "Administrator"
+  },
+  {
     "id": "95dd8e98-5161-40e5-8a4b-bb301983a711",
     "timestamp": "2026-03-30T15:43:46.520Z",
     "action": "CREATE",

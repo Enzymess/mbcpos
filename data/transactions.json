@@ -193,5 +193,36 @@
     "paymentMethod": "cash",
     "processedBy": "Administrator",
     "processedById": "admin-001"
+  },
+  {
+    "id": "0b1414b3-0af8-4a7d-ba8a-666f692ab63b",
+    "date": "2026-04-01T00:50:50.599Z",
+    "items": [
+      {
+        "id": "prod_1773137040227_jmdwi",
+        "name": "Pork Humba",
+        "price": 95,
+        "cost": 0,
+        "qty": 2,
+        "total": 190
+      },
+      {
+        "id": "prod_1773137040227_d7s5x",
+        "name": "Bicol Express",
+        "price": 90,
+        "cost": 0,
+        "qty": 2,
+        "total": 180
+      }
+    ],
+    "total": 414.4,
+    "subtotal": 370,
+    "discount": 0,
+    "tax": 44.4,
+    "paymentMethod": "salary",
+    "processedBy": "Administrator",
+    "processedById": "admin-001",
+    "employeeId": "10015",
+    "employeeName": "enzo"
   }
 ]

@@ -56,9 +56,9 @@
     "category": "cat_1773137040226_au76e",
     "price": 95,
     "cost": 55,
-    "stock": 47,
+    "stock": 45,
     "lowStockThreshold": 10,
-    "updatedAt": "2026-03-18T17:49:02.076Z"
+    "updatedAt": "2026-04-01T00:50:50.599Z"
   },
   {
     "id": "prod_1773137040227_d7s5x",
@@ -66,8 +66,9 @@
     "category": "cat_1773137040226_au76e",
     "price": 90,
     "cost": 50,
-    "stock": 48,
-    "lowStockThreshold": 10
+    "stock": 46,
+    "lowStockThreshold": 10,
+    "updatedAt": "2026-04-01T00:50:50.599Z"
   },
   {
     "id": "prod_1773137040227_59u8o",

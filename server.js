@@ -714,14 +714,24 @@ app.delete('/api/categories/:id', authenticateToken, requireAdmin, (req, res) =>
   
   const deleted = categories.splice(index, 1)[0];
   
-  // Delete products in this category
-  const remainingProducts = products.filter(p => p.category !== req.params.id);
-  writeFile(FILES.products, remainingProducts);
+  // Remove this tag from all products (don't delete the products)
+  const updatedProducts = products.map(p => {
+    // Handle new multi-categories array format
+    if (Array.isArray(p.categories)) {
+      return { ...p, categories: p.categories.filter(id => id !== req.params.id) };
+    }
+    // Handle legacy single category field
+    if (p.category === req.params.id) {
+      return { ...p, category: null };
+    }
+    return p;
+  });
+  writeFile(FILES.products, updatedProducts);
   writeFile(FILES.categories, categories);
   
   logAudit('DELETE', 'CATEGORY', req.params.id, deleted.name, null, req.user.id, req.user.fullName);
   
-  res.json({ message: 'Category and associated products deleted' });
+  res.json({ message: 'Tag deleted. Products were kept and untagged.' });
 });
 
 // ═══════════════════════════════════════════════════════════
@@ -2086,6 +2096,46 @@ app.get('/api/reports/top-products', authenticateToken, (req, res) => {
     .slice(0, 10);
   
   res.json(result);
+});
+
+// Best sellers — global and per-category
+app.get('/api/bestsellers', (req, res) => {
+  const transactions = readFile(FILES.transactions);
+  const products     = readFile(FILES.products);
+
+  // Tally qty sold per product id
+  const qtySold = {};
+  transactions.forEach(t => {
+    if (t.voided) return;
+    (t.items || []).forEach(item => {
+      qtySold[item.id] = (qtySold[item.id] || 0) + (item.qty || 1);
+    });
+  });
+
+  // Global top product id (most qty sold)
+  const globalTopId = Object.entries(qtySold)
+    .sort((a, b) => b[1] - a[1])
+    .map(([id]) => id)[0] || null;
+
+  // Per-category top: for each category, find the product in that category
+  // with the most total qty sold
+  const categoryTop = {};
+  products.forEach(p => {
+    const tags = Array.isArray(p.categories) ? p.categories : (p.category ? [p.category] : []);
+    const sold = qtySold[p.id] || 0;
+    if (sold === 0) return;
+    tags.forEach(catId => {
+      if (!categoryTop[catId] || sold > categoryTop[catId].sold) {
+        categoryTop[catId] = { id: p.id, sold };
+      }
+    });
+  });
+
+  res.json({
+    globalTopId,
+    categoryTop, // { [categoryId]: { id: productId, sold: N } }
+    qtySold       // full map for reference
+  });
 });
 
 // Margin alerts
