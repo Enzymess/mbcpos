@@ -829,6 +829,100 @@ function printEmployeeLedger() {
   printWindow.print();
 }
 
+
+// ═══════════════════════════════════════════════════════════
+// EXPORT UNPAID EMPLOYEES TO EXCEL
+// ═══════════════════════════════════════════════════════════
+
+async function exportUnpaidEmployeesExcel() {
+  // Ensure employees are loaded
+  if (!state.customers.length) await loadEmployees();
+
+  const unpaid = state.customers
+    .filter(e => !e.liveIsPaid && e.liveBalance > 0)
+    .sort((a, b) => b.liveBalance - a.liveBalance);
+
+  if (!unpaid.length) {
+    showToast('No unpaid employees to export.', 'info');
+    return;
+  }
+
+  const currency  = state.settings.currency || '₱';
+  const canteen   = state.settings.canteenName || 'Company Canteen';
+  const preparedBy = state.user.fullName || state.user.username || '';
+  const now       = new Date();
+  const dateStr   = now.toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
+  const timeStr   = now.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' });
+
+  const wb = XLSX.utils.book_new();
+  const ws_data = [];
+
+  // ── Title block ────────────────────────────────────────────
+  ws_data.push([canteen]);
+  ws_data.push(['UNPAID SALARY DEDUCTIONS REPORT']);
+  ws_data.push([`Generated: ${dateStr} ${timeStr}   |   Prepared by: ${preparedBy}`]);
+  ws_data.push([]);  // blank spacer
+
+  // ── Column headers ─────────────────────────────────────────
+  ws_data.push([
+    'Emp ID',
+    'Full Name',
+    'Department',
+    'Position',
+    `Amount Owed (${currency})`,
+    'Status'
+  ]);
+
+  // ── Data rows ──────────────────────────────────────────────
+  unpaid.forEach(e => {
+    ws_data.push([
+      e.employeeId,
+      e.name || '',
+      e.department || '',
+      e.position || '',
+      parseFloat(e.liveBalance.toFixed(2)),
+      'UNPAID'
+    ]);
+  });
+
+  // ── Totals row ─────────────────────────────────────────────
+  const totalOwed = unpaid.reduce((s, e) => s + e.liveBalance, 0);
+  ws_data.push([]);
+  ws_data.push([
+    `${unpaid.length} employee(s) with outstanding balance`,
+    '', '', '',
+    parseFloat(totalOwed.toFixed(2)),
+    'TOTAL OWED'
+  ]);
+
+  const ws = XLSX.utils.aoa_to_sheet(ws_data);
+
+  // ── Column widths ──────────────────────────────────────────
+  ws['!cols'] = [
+    { wch: 12 },  // Emp ID
+    { wch: 28 },  // Full Name
+    { wch: 20 },  // Department
+    { wch: 20 },  // Position
+    { wch: 20 },  // Amount Owed
+    { wch: 10 },  // Status
+  ];
+
+  // ── Merge title cells (A1:F1, A2:F2, A3:F3) ───────────────
+  ws['!merges'] = [
+    { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } },
+    { s: { r: 1, c: 0 }, e: { r: 1, c: 5 } },
+    { s: { r: 2, c: 0 }, e: { r: 2, c: 5 } },
+  ];
+
+  XLSX.utils.book_append_sheet(wb, ws, 'Unpaid Employees');
+
+  // ── File name with date ────────────────────────────────────
+  const fileDateStr = now.toISOString().slice(0, 10);
+  XLSX.writeFile(wb, `Unpaid_Employees_${fileDateStr}.xlsx`);
+
+  showToast(`Exported ${unpaid.length} unpaid employee(s) to Excel.`, 'success');
+}
+
 // ═══════════════════════════════════════════════════════════
 // STOCK RECEIVING
 // ═══════════════════════════════════════════════════════════

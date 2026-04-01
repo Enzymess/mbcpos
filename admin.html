@@ -6,6 +6,7 @@
  <title>MBCPOS - Admin Panel</title>
  <link rel="stylesheet" href="style.css">
  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
  <style>
   .au-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--border);font-size:11px;font-weight:600;cursor:default;user-select:none;}
   .au-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
@@ -381,7 +382,10 @@
  <div class="tab-content" id="employeesTab">
  <div class="page-header">
  <h1 class="page-title">Employees</h1>
- <button class="btn btn-primary" onclick="showAddEmployeeModal()">+ Add Employee</button>
+ <div style="display:flex;gap:8px;">
+  <button class="btn btn-secondary" onclick="exportUnpaidEmployeesExcel()">⬇ Export Unpaid to Excel</button>
+  <button class="btn btn-primary" onclick="showAddEmployeeModal()">+ Add Employee</button>
+ </div>
  </div>
  
  <div class="search-filters">
